@@ -1,0 +1,6 @@
+.env
+__pycache__/
+*.pyc
+.env*
+!*.example
+.ui-spec-digest.md

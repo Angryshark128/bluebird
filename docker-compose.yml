@@ -1,0 +1,52 @@
+# 青鸟 Bluebird —— GitHub Webhook → Bark 手机通知
+# 敏感信息（WEBHOOK_SECRET / BARK_KEY 等）通过 .env 注入，不入库。
+#   cp .env.example .env   # 按需填写
+#   docker compose up -d --build
+services:
+  bluebird:
+    build: .
+    image: bluebird:latest
+    container_name: bluebird
+    restart: unless-stopped
+    ports:
+      - "8082:8082"
+    environment:
+      NOTIFY_HOST: 0.0.0.0
+      NOTIFY_PORT: 8082
+      NOTIFY_OWNER: ${NOTIFY_OWNER:-}
+      WEBHOOK_SECRET: ${WEBHOOK_SECRET:-}
+      BARK_URL: ${BARK_URL:-https://api.day.app}
+      BARK_KEY: ${BARK_KEY:-}
+      BARK_SOURCE: ${BARK_SOURCE:-github}
+      FEISHU_WEBHOOK: ${FEISHU_WEBHOOK:-}
+      FEISHU_SECRET: ${FEISHU_SECRET:-}
+      WECOM_WEBHOOK: ${WECOM_WEBHOOK:-}
+      PUSHDEER_URL: ${PUSHDEER_URL:-https://api2.pushdeer.com}
+      PUSHDEER_KEY: ${PUSHDEER_KEY:-}
+      GENERIC_WEBHOOK_URL: ${GENERIC_WEBHOOK_URL:-}
+      GENERIC_WEBHOOK_SECRET: ${GENERIC_WEBHOOK_SECRET:-}
+      GENERIC_TOKEN: ${GENERIC_TOKEN:-}
+      LOG_RETENTION_DAYS: ${LOG_RETENTION_DAYS:-30}
+      NOTIFY_AUTH_USER: ${NOTIFY_AUTH_USER:-}
+      NOTIFY_AUTH_PASS: ${NOTIFY_AUTH_PASS:-}
+      UI_SESSION_SECRET: ${UI_SESSION_SECRET:-}
+      MAX_BODY_BYTES: ${MAX_BODY_BYTES:-}
+      NOTIFY_TIMEOUT: ${NOTIFY_TIMEOUT:-}
+      BASE_PATH: ${BASE_PATH:-}
+      NOTIFY_DB: /opt/bluebird/bluebird.db
+    volumes:
+      - /opt/bluebird:/opt/bluebird
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request;urllib.request.urlopen('http://127.0.0.1:8082/health', timeout=3)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 64M
+        reservations:
+          cpus: "0.1"
+          memory: 64M

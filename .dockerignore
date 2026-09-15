@@ -1,0 +1,12 @@
+# 构建上下文排除：敏感配置与本地产物不进镜像
+.env
+.env.*
+.env.bak-*
+.git
+.github
+.gitignore
+.dockerignore
+__pycache__/
+*.pyc
+tests/
+README.md

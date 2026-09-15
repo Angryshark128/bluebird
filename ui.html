@@ -1,0 +1,2636 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="emerald">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>青鸟 Bluebird · 推送审计</title>
+<link rel="icon" href="favicon.ico">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script>
+/* 首帧主题恢复（防闪烁）：主题色 bb_theme（indigo|emerald|rose|amber|slate）x 明暗 bb_scheme（light|dark） */
+(function () {
+  var t = localStorage.getItem('bb_theme');
+  var s = localStorage.getItem('bb_scheme');
+  var theme = ['indigo', 'emerald', 'rose', 'amber', 'slate'].indexOf(t) >= 0 ? t : 'emerald';
+  document.documentElement.setAttribute('data-theme', theme);
+  if (s === 'dark') document.documentElement.classList.add('dark');
+  /* 首帧侧边栏折叠恢复（bb_sidebar：'1'=折叠，仅桌面生效，移动端由 CSS 强制展开） */
+  if (localStorage.getItem('bb_sidebar') === '1') document.documentElement.classList.add('nav-sm');
+})();
+</script>
+<style> :root {
+--brand-50:#eef2ff; --brand-100:#e0e7ff; --brand-500:#6366f1; --brand-600:#4f46e5; --brand-700:#4338ca; --brand-900:#312e81;
+--surface-0:#ffffff; --surface-1:#fafafa; --surface-2:#f4f4f5; --surface-3:#e4e4e7; --surface-4:#d4d4d8;
+--ink-900:#18181b; --ink-700:#3f3f46; --ink-500:#71717a; --ink-400:#a1a1aa;
+--space-1:4px; --space-2:8px; --space-3:12px; --space-4:16px; --space-6:24px; --space-8:32px; --space-12:48px; --space-16:64px; --text-xs:12px; --text-sm:14px; --text-base:16px; --text-lg:18px; --text-xl:20px; --radius-sm:4px; --radius-md:6px; --radius-lg:8px; --radius-xl:12px;
+--shadow-sm:0 1px 2px rgba(16,24,40,.05); --shadow-md:0 2px 10px rgba(16,24,40,.08); --shadow-lg:0 10px 30px rgba(16,24,40,.14);  --ok-bg:#ecfdf5; --ok-fg:#047857; --ok-bar:#059669; --ok-dot:#10b981; --warn-bg:#fffbeb; --warn-fg:#b45309; --warn-bar:#d97706; --warn-dot:#f59e0b; --danger-bg:#fff1f2; --danger-fg:#be123c; --danger-bar:#e11d48; --danger-dot:#f43f5e;
+--bg-page:#f4f4f5;           --bg-panel:#ffffff;          --bg-panel2:#fafafa;         --bg-soft:#f4f4f5;           --bg-field:#f4f4f5;          --fg-strong:#18181b;         --fg-body:#3f3f46;           --fg-sub:#71717a;            --fg-faint:#a1a1aa;          --line:#e4e4e7;              --line-strong:#d4d4d8;       --row-hover:#fafafa;
+--action-bg:var(--brand-600); --action-hover:var(--brand-700); --action-fg:#ffffff; --link:var(--brand-600); --link-hover:var(--brand-700); --focus-ring:var(--brand-600); --brand-soft:rgba(79,70,229,.10);        
+--chart-1:var(--brand-600); --chart-2:#10b981; --chart-3:#f59e0b; --chart-4:#f43f5e; --chart-5:#64748b; --danger-solid:#e11d48; --danger-solid-hover:#be123c;
+--font-sans:"Inter",-apple-system,BlinkMacSystemFont,"PingFang SC","Segoe UI","Microsoft YaHei",sans-serif; --font-mono:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace; }
+html[data-theme="emerald"] { --brand-50:#ecfdf5; --brand-100:#d1fae5; --brand-500:#10b981; --brand-600:#059669; --brand-700:#047857; --brand-900:#064e3b; --brand-soft:rgba(16,185,129,.12); }
+html[data-theme="rose"] { --brand-50:#fff1f2; --brand-100:#ffe4e6; --brand-500:#f43f5e; --brand-600:#e11d48; --brand-700:#be123c; --brand-900:#881337; --brand-soft:rgba(244,63,94,.12); }
+html[data-theme="amber"] { --brand-50:#fffbeb; --brand-100:#fef3c7; --brand-500:#f59e0b; --brand-600:#d97706; --brand-700:#b45309; --brand-900:#78350f; --brand-soft:rgba(245,158,11,.14); }
+html[data-theme="slate"] { --brand-50:#f8fafc; --brand-100:#f1f5f9; --brand-500:#64748b; --brand-600:#475569; --brand-700:#334155; --brand-900:#0f172a; --brand-soft:rgba(100,116,139,.12); }
+html.dark { --bg-page:#18181b;           --bg-panel:#27272a;          --bg-panel2:#2c2c30;         --bg-soft:#333337;           --bg-field:#212124;          --fg-strong:#ffffff;         --fg-body:#e4e4e7;           --fg-sub:#d4d4d8;            --fg-faint:#a1a1aa;          --line:#3f3f46;              --line-strong:#52525b; --row-hover:#2c2c30; --shadow-sm:0 1px 2px rgba(0,0,0,.35); --shadow-md:0 2px 10px rgba(0,0,0,.45); --shadow-lg:0 12px 32px rgba(0,0,0,.55); --action-bg:var(--brand-500); --action-hover:var(--brand-600); --link:var(--brand-500); --link-hover:var(--brand-600); --focus-ring:var(--brand-500); --brand-soft:rgba(255,255,255,.08); --ok-bg:#064e3b; --ok-fg:#6ee7b7; --ok-bar:#34d399; --ok-dot:#34d399; --warn-bg:#78350f; --warn-fg:#fcd34d; --warn-bar:#fbbf24; --warn-dot:#fbbf24; --danger-bg:#881337; --danger-fg:#fda4af; --danger-bar:#fb7185; --danger-dot:#fb7185; --danger-solid:#f43f5e; --danger-solid-hover:#e11d48; --chart-1:var(--brand-500); --chart-2:#34d399; --chart-3:#fbbf24; --chart-4:#fb7185; --chart-5:#94a3b8; }
+body.modal-open .main { overflow:hidden; }
+* { box-sizing:border-box; margin:0; padding:0; }
+html, body { height:100%; }
+body { font-family:var(--font-sans); font-size:var(--text-sm); line-height:1.55; color:var(--fg-body); background:var(--bg-page); -webkit-font-smoothing:antialiased; transition:background-color .2s ease, color .2s ease; overflow:hidden; }
+.mono, .time, .kpi-num, code, pre { font-family:var(--font-mono); font-variant-numeric:tabular-nums; }
+button, input, select, textarea { font:inherit; color:inherit; }
+button { cursor:pointer; }
+a { color:var(--link); text-decoration:none; }
+a:hover { color:var(--link-hover); }
+:focus-visible { outline:2px solid var(--focus-ring); outline-offset:2px; }
+::selection { background:var(--brand-soft); }
+::-webkit-scrollbar { width:10px; height:10px; }
+::-webkit-scrollbar-thumb { background:var(--line-strong); border-radius:6px; border:2px solid transparent; background-clip:content-box; }
+::-webkit-scrollbar-track { background:transparent; }
+.sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+.sec-gap { margin-top: var(--space-6); }
+.sk-chart { height:280px; }
+.gap-b { margin-bottom: var(--space-4); }
+.gap-t { margin-top: var(--space-3); }
+.gap-t-sm { margin-top: var(--space-1); }
+.d-body-flush { padding-top:0; }
+.err-inline { padding: var(--space-8) var(--space-2); }
+.sk-row { height:16px; }
+.sk-full { width:100%; }
+.sk-w40 { width:40%; }
+.sk-w80 { width:80%; }
+.sk-stack { display:flex; flex-direction:column; gap:var(--space-2); padding:var(--space-3) var(--space-4); }
+ .layout { display:flex; flex-direction:row; height:100%; }
+.content-col { flex:1; min-width:0; display:flex; flex-direction:column; height:100%; }
+.topbar { flex-shrink:0; height:64px; position:relative; z-index:20; display:flex; align-items:stretch; background:var(--bg-page); border-bottom:1px solid var(--line); }
+.topbar-inner { height:100%; padding:0 var(--space-4); display:flex; align-items:center; gap:var(--space-3); }
+.brand { display:flex; align-items:center; gap:var(--space-3); min-width:0; }
+.brand-mark { width:36px; height:36px; border-radius:var(--radius-lg); flex-shrink:0; display:inline-flex; align-items:center; justify-content:center; background:var(--brand-50); color:var(--brand-700); }
+.brand-mark svg { width:20px; height:20px; }
+.brand h1 { font-size:var(--text-base); font-weight:600; color:var(--fg-strong); white-space:nowrap; }
+.main { flex:1; overflow-y:auto; min-height:0; }
+.page { padding:var(--space-6) var(--space-4) var(--space-12); }
+@media (min-width:768px) { .topbar-inner, .page { padding-left:var(--space-6); padding-right:var(--space-6); }
+}
+@media (min-width:1024px) { .topbar-inner, .page { padding-left:var(--space-8); padding-right:var(--space-8); }
+}
+.page-head { margin-bottom:var(--space-6); }
+.page-head h2 { font-size:var(--text-xl); font-weight:700; color:var(--fg-strong); line-height:1.3; }
+.page-head p { margin-top:var(--space-1); color:var(--fg-sub); font-size:var(--text-sm); }
+.section-title { font-size:var(--text-base); font-weight:600; color:var(--fg-strong); }
+.section-desc { font-size:var(--text-xs); color:var(--fg-sub); margin-top:2px; }
+.card { background:var(--bg-panel); border:1px solid var(--line); border-radius:var(--radius-xl); overflow:hidden; }
+html.dark .card { border-color:var(--line); }
+.card-head { display:flex; align-items:center; justify-content:space-between; gap:var(--space-3); padding:var(--space-4) var(--space-6); border-bottom:1px solid var(--line); flex-wrap:wrap; }
+.card-body { padding:var(--space-6); }
+.stack { display:flex; flex-direction:column; gap:var(--space-4); }
+.stack-lg { display:flex; flex-direction:column; gap:var(--space-6); }
+.btn { display:inline-flex; align-items:center; justify-content:center; gap:var(--space-2); padding:var(--space-2) var(--space-4); min-height:36px; border:1px solid transparent; border-radius:var(--radius-lg); font-size:var(--text-sm); font-weight:500; line-height:1; color:var(--fg-body); background:transparent; white-space:nowrap; user-select:none; transition:background-color .15s ease, border-color .15s ease, color .15s ease, opacity .15s ease; }
+.btn svg { width:16px; height:16px; flex-shrink:0; }
+.btn:active { transform:scale(.98); }
+.btn:disabled { opacity:.5; cursor:not-allowed; }
+.btn:disabled:active { transform:none; }
+.btn-primary { background:var(--action-bg); color:var(--action-fg); border-color:var(--action-bg); }
+.btn-primary:hover { background:var(--action-hover); border-color:var(--action-hover); }
+.btn-secondary { background:var(--bg-panel); border-color:var(--line-strong); color:var(--fg-body); }
+.btn-secondary:hover { background:var(--row-hover); }
+.btn-ghost { color:var(--fg-sub); border-color:transparent; }
+.btn-ghost:hover { color:var(--link-hover); background:var(--brand-soft); }
+.btn-danger { background:var(--danger-solid); color:#ffffff; border-color:var(--danger-solid); }
+.btn-danger:hover { background:var(--danger-solid-hover); border-color:var(--danger-solid-hover); }
+.btn-sm { min-height:30px; padding:var(--space-1) var(--space-3); font-size:var(--text-xs); }
+.btn-icon { width:36px; height:36px; padding:0; flex-shrink:0; }
+.btn-icon.btn-sm { width:30px; height:30px; }
+.btn .btn-spin { display:none; }
+.btn.loading { pointer-events:none; }
+.btn.loading .btn-spin { display:inline-flex; animation:spin 1s linear infinite; }
+.btn.loading .btn-txt, .btn.loading > svg:not(.btn-spin) { opacity:0; position:absolute; }
+@keyframes spin { to { transform:rotate(360deg); } }
+.seg { display:inline-flex; gap:2px; background:var(--bg-soft); border:1px solid var(--line); border-radius:var(--radius-lg); padding:2px; }
+.seg-btn { display:inline-flex; align-items:center; gap:var(--space-1); background:none; border:none; color:var(--fg-sub); font-size:var(--text-xs); font-weight:500; padding:4px var(--space-3); border-radius:var(--radius-md); cursor:pointer; transition:color .15s ease, background-color .15s ease; }
+.seg-btn:hover { color:var(--fg-strong); }
+.seg-btn.active { background:var(--bg-panel); color:var(--fg-strong); font-weight:600; box-shadow:var(--shadow-sm); }
+.label { display:block; font-size:var(--text-sm); font-weight:500; color:var(--fg-strong); margin-bottom:var(--space-1); }
+.help { font-size:var(--text-xs); color:var(--fg-faint); }
+.field-err { font-size:var(--text-xs); color:var(--danger-fg); margin-top:var(--space-1); min-height:16px; }
+.input, textarea.input, select.input { width:100%; padding:var(--space-2) var(--space-3); background:var(--bg-field); border:1px solid transparent; border-radius:var(--radius-lg); font-size:var(--text-sm); color:var(--fg-strong); transition:background-color .15s ease, border-color .15s ease; }
+.input::placeholder { color:var(--fg-faint); }
+.input:focus { outline:none; background:var(--bg-panel); border-color:var(--brand-500); box-shadow:0 0 0 3px var(--brand-soft); }
+.input:disabled { opacity:.5; cursor:not-allowed; }
+textarea.input { resize:vertical; min-height:80px; }
+select.input { cursor:pointer; }
+.input.has-err { border-color:var(--danger-bar); }
+.form-row { display:flex; flex-direction:column; gap:var(--space-1); }
+.form-actions { display:flex; justify-content:flex-end; gap:var(--space-2); }
+.search { position:relative; }
+.search svg { position:absolute; left:var(--space-3); top:50%; transform:translateY(-50%); width:16px; height:16px; color:var(--fg-faint); pointer-events:none; }
+.search .input { padding-left:34px; }
+.chk { display:inline-flex; align-items:center; gap:var(--space-2); font-size:var(--text-sm); color:var(--fg-body); cursor:pointer; }
+.chk input { width:16px; height:16px; accent-color:var(--brand-600); cursor:pointer; }
+.switch { position:relative; display:inline-flex; width:44px; height:24px; flex-shrink:0; }
+.switch input { position:absolute; opacity:0; width:100%; height:100%; margin:0; cursor:pointer; z-index:1; }
+.switch .track { position:absolute; inset:0; border-radius:999px; background:var(--line-strong); transition:background-color .2s ease; pointer-events:none; }
+.switch .thumb { position:absolute; top:2px; left:2px; width:20px; height:20px; border-radius:50%; background:#ffffff; box-shadow:var(--shadow-sm); pointer-events:none; transition:transform .2s ease; }
+.switch input:checked + .track { background:var(--brand-600); }
+.switch input:checked ~ .thumb { transform:translateX(20px); }
+.switch input:focus-visible + .track { outline:2px solid var(--focus-ring); outline-offset:2px; }
+.switch input:disabled + .track { opacity:.5; }
+.badge { display:inline-flex; align-items:center; gap:var(--space-1); padding:1px var(--space-2); border-radius:var(--radius-sm); font-size:var(--text-xs); font-weight:500; line-height:1.6; white-space:nowrap; }
+.badge .dot { width:6px; height:6px; border-radius:50%; }
+.badge svg { width:12px; height:12px; }
+.badge-ok    { background:var(--ok-bg); color:var(--ok-fg); }
+.badge-ok .dot, .badge-ok svg { color:var(--ok-dot); fill:var(--ok-dot); }
+.badge-warn  { background:var(--warn-bg); color:var(--warn-fg); }
+.badge-warn .dot, .badge-warn svg { color:var(--warn-dot); fill:var(--warn-dot); }
+.badge-danger{ background:var(--danger-bg); color:var(--danger-fg); }
+.badge-danger .dot, .badge-danger svg { color:var(--danger-dot); fill:var(--danger-dot); }
+.badge-brand { background:var(--brand-50); color:var(--brand-700); }
+.badge-neutral { background:var(--bg-soft); color:var(--fg-sub); }
+.b-cells { display:inline-flex; flex-direction:column; gap:2px; }
+.badge-neutral { background:var(--bg-soft); color:var(--fg-sub); }
+.empty { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:var(--space-2); padding:var(--space-12) var(--space-4); text-align:center; }
+.empty svg { width:48px; height:48px; color:var(--fg-faint); }
+.empty .empty-title { font-size:var(--text-base); font-weight:600; color:var(--fg-strong); }
+.empty .empty-sub { font-size:var(--text-sm); color:var(--fg-sub); max-width:36em; }
+.skeleton { background:var(--bg-soft); border-radius:var(--radius-md); animation:pulse 1.6s ease-in-out infinite; pointer-events:none; }
+.sk-w120 { width:120px; }
+@keyframes pulse { 0%,100% { opacity:.6; } 50% { opacity:1; } }
+.err-block { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:var(--space-3); padding:var(--space-12) var(--space-4); text-align:center; }
+.err-block .err-icon { width:48px; height:48px; color:var(--fg-faint); }
+.err-block .err-title { font-size:var(--text-base); font-weight:600; color:var(--fg-strong); }
+.err-block .err-sub { font-size:var(--text-sm); color:var(--fg-sub); max-width:32em; }
+.overlay { position:fixed; inset:0; z-index:950; display:none; align-items:center; justify-content:center; padding:var(--space-4); }
+.overlay.open { display:flex; }
+.overlay .mask { position:absolute; inset:0; background:rgba(24,24,27,.55); backdrop-filter:blur(2px); -webkit-backdrop-filter:blur(2px); animation:fade-in .18s ease; }
+@keyframes fade-in { from { opacity:0; } to { opacity:1; } }
+.dialog { position:relative; width:100%; max-width:672px; max-height:calc(100vh - 40px); display:flex; flex-direction:column; background:var(--bg-panel); border:1px solid var(--line); border-radius:var(--radius-xl); box-shadow:var(--shadow-lg); animation:dialog-in .18s ease; }
+@keyframes dialog-in { from { opacity:0; transform:scale(.96) translateY(8px); } to { opacity:1; transform:none; } }
+.dialog-sm  { max-width:448px; }
+.dialog-lg  { max-width:672px; }
+.dialog-head { display:flex; align-items:center; justify-content:space-between; gap:var(--space-3); padding:var(--space-4) var(--space-6); border-bottom:1px solid var(--line); flex-shrink:0; }
+.dialog-title { display:flex; align-items:center; gap:var(--space-2); font-size:var(--text-base); font-weight:600; color:var(--fg-strong); }
+.dialog-title svg { width:20px; height:20px; }
+.dialog-title.t-danger svg { color:var(--danger-fg); }
+.dialog-title.t-info svg { color:var(--brand-600); }
+.dialog-body { padding:var(--space-6); overflow-y:auto; min-height:0; flex:1; }
+.dialog-foot { display:flex; justify-content:flex-end; gap:var(--space-2); padding:var(--space-4) var(--space-6); border-top:1px solid var(--line); flex-shrink:0; }
+.confirm-body { display:flex; gap:var(--space-4); align-items:flex-start; }
+.confirm-icon { width:40px; height:40px; border-radius:var(--radius-lg); flex-shrink:0; display:inline-flex; align-items:center; justify-content:center; background:var(--danger-bg); color:var(--danger-fg); }
+.confirm-icon svg { width:20px; height:20px; }
+.confirm-msg { font-size:var(--text-sm); color:var(--fg-body); line-height:1.7; word-break:break-word; }
+.confirm-msg strong { color:var(--fg-strong); font-weight:600; }
+.confirm-foot { padding:var(--space-4) var(--space-6) var(--space-6); }
+.toasts { position:fixed; top:var(--space-4); left:50%; transform:translateX(-50%); z-index:990; display:flex; flex-direction:column; align-items:center; gap:var(--space-2); width:min(480px,calc(100vw - 32px)); pointer-events:none; }
+.toast { pointer-events:auto; width:100%; display:flex; align-items:flex-start; gap:var(--space-3); padding:var(--space-3) var(--space-4); border-radius:var(--radius-xl); box-shadow:var(--shadow-lg); border:1px solid; animation:toast-in .18s ease; }
+@keyframes toast-in { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:none; } }
+.toast > svg { width:18px; height:18px; flex-shrink:0; margin-top:1px; }
+.toast-msg { flex:1; min-width:0; }
+.toast-title { font-size:var(--text-sm); font-weight:600; color:var(--fg-strong); }
+.toast-desc { font-size:var(--text-xs); color:var(--fg-sub); margin-top:2px; overflow-wrap:break-word; }
+.toast-close { flex-shrink:0; display:inline-flex; padding:2px; border:none; border-radius:var(--radius-sm); background:none; color:var(--fg-faint); transition:color .15s ease, background-color .15s ease; }
+.toast-close:hover { color:var(--fg-strong); background:var(--bg-soft); }
+.toast-close svg { width:14px; height:14px; }
+.toast-success { background:var(--ok-bg); border-color:var(--ok-bar); }
+.toast-success > svg { color:var(--ok-bar); }
+.toast-error   { background:var(--danger-bg); border-color:var(--danger-bar); }
+.toast-error > svg { color:var(--danger-bar); }
+.toast-warning { background:var(--warn-bg); border-color:var(--warn-bar); }
+.toast-warning > svg { color:var(--warn-bar); }
+.toast-info    { background:var(--brand-50); border-color:var(--brand-500); }
+.toast-info > svg { color:var(--brand-600); }
+.toast.out { animation:toast-out .15s ease forwards; }
+@keyframes toast-out { to { opacity:0; transform:translateY(-6px); } }
+ .fab-wrap { position:fixed; right:24px; bottom:24px; z-index:930; display:flex; flex-direction:column; align-items:flex-end; }
+.fab-btn { width:44px; height:44px; border-radius:50%; border:1px solid var(--line); background:var(--bg-panel); color:var(--fg-sub); display:inline-flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:var(--shadow-md); position:relative; transition:transform .15s ease, box-shadow .15s ease, background-color .15s ease, color .15s ease, opacity .15s ease; }
+.fab-btn svg { width:19px; height:19px; }
+.fab-btn:hover { transform:translateY(-1px); box-shadow:var(--shadow-lg); }
+.fab-btn:active { transform:scale(.95); }
+.fab-btn:focus-visible { outline:2px solid var(--focus-ring); outline-offset:2px; }
+.fab-main { width:48px; height:48px; background:var(--action-bg); border-color:var(--action-bg); color:var(--action-fg); box-shadow:var(--shadow-lg); }
+.fab-main:hover { background:var(--action-hover); color:var(--action-fg); }
+.fab-main svg { transition:transform .2s ease; }
+.fab-wrap.open .fab-main svg { transform:rotate(45deg); }
+.fab-panel { display:flex; flex-direction:column; align-items:flex-end; gap:var(--space-2); margin-bottom:var(--space-3); opacity:0; visibility:hidden; transform:translateY(8px) scale(.92); transform-origin:bottom right; transition:opacity .18s ease, transform .18s ease, visibility 0s linear .18s; }
+.fab-wrap.open .fab-panel { opacity:1; visibility:visible; transform:translateY(0) scale(1); transition:opacity .18s ease, transform .18s ease; }
+.fab-theme .ic { position:relative; }
+.fab-logout { color:var(--danger-fg); border-color:color-mix(in srgb, var(--danger-bar) 40%, transparent); }
+.fab-logout:hover { background:var(--danger-bg); color:var(--danger-fg); }
+.fab-scheme svg { display:none; }
+html:not(.dark) .fab-scheme svg.ic-moon { display:block; }
+html.dark .fab-scheme svg.ic-sun { display:block; }
+.fab-pop { position:absolute; right:calc(100% + 12px); top:50%; transform:translateY(-50%); display:flex; flex-direction:column; gap:var(--space-2); background:var(--bg-panel); border:1px solid var(--line); border-radius:var(--radius-xl); box-shadow:var(--shadow-lg); padding:var(--space-3); opacity:0; visibility:hidden; pointer-events:none; transition:opacity .18s ease, visibility 0s linear .18s; }
+.fab-theme.open .fab-pop { opacity:1; visibility:visible; pointer-events:auto; transition:opacity .18s ease; }
+.fab-pop .fp-label { font-size:11px; font-weight:600; letter-spacing:.03em; color:var(--fg-faint); }
+.fab-swatches { display:flex; flex-direction:row; gap:var(--space-2); }
+.fab-swatch { width:28px; height:28px; border-radius:50%; cursor:pointer; padding:0; border:2px solid transparent; transition:transform .12s ease, box-shadow .12s ease; }
+.fab-swatch:hover { transform:scale(1.12); }
+.fab-swatch.active { box-shadow:0 0 0 2px var(--bg-panel), 0 0 0 4px var(--fg-strong); }
+.fab-swatch:focus-visible { outline:none; box-shadow:0 0 0 2px var(--bg-panel), 0 0 0 4px var(--focus-ring); }
+.tabs { display:flex; align-items:center; gap:var(--space-1); border-bottom:1px solid var(--line); margin:calc(var(--space-4) * -1) calc(var(--space-6) * -1) 0; padding:0 var(--space-6); overflow-x:auto; }
+.tabs-inner { display:flex; align-items:center; gap:var(--space-1); }
+.tab { appearance:none; border:none; background:none; cursor:pointer; padding:var(--space-3) var(--space-2); margin-bottom:-1px; border-bottom:2px solid transparent; color:var(--fg-sub); font-size:var(--text-sm); font-weight:500; white-space:nowrap; transition:color .15s ease, border-color .15s ease; }
+.tab:hover { color:var(--fg-strong); }
+.tab.active { color:var(--brand-700); border-bottom-color:var(--brand-600); font-weight:600; }
+html.dark .tab.active { color:var(--brand-500); }
+.dd { position:relative; display:inline-flex; }
+.dd.block { display:flex; }
+.dd.block .dd-btn { flex:1; }
+.dd.right .dd-menu { left:auto; right:0; }
+.dd.active-host { z-index:52; }
+.card.dd-active, .dialog-body.dd-active { overflow:visible; }
+.dd-btn { display:inline-flex; align-items:center; justify-content:space-between; gap:var(--space-2); white-space:nowrap; background:var(--bg-field); border:1px solid transparent; border-radius:var(--radius-lg); color:var(--fg-strong); padding:var(--space-2) var(--space-3); font-size:var(--text-sm); transition:background-color .15s ease, border-color .15s ease; }
+.dd-btn .dd-label { min-width:0; overflow:hidden; text-overflow:ellipsis; }
+.dd-btn:hover { background:var(--bg-panel); border-color:var(--line-strong); }
+.dd-btn:disabled { opacity:.5; cursor:not-allowed; }
+.dd-chev { opacity:.6; transition:transform .2s ease; width:14px; height:14px; flex-shrink:0; }
+.dd-chev svg { display:block; width:14px; height:14px; }
+.dd.open .dd-chev { transform:rotate(180deg); }
+.dd-menu { position:absolute; top:calc(100% + 6px); left:0; z-index:50; min-width:100%; max-width:280px; padding:var(--space-1); background:var(--bg-panel); border:1px solid var(--line); border-radius:var(--radius-lg); box-shadow:var(--shadow-md); display:none; overflow:auto; max-height:280px; }
+.dd.open .dd-menu { display:block; }
+.dd-item { padding:var(--space-2) var(--space-3); border-radius:var(--radius-md); cursor:pointer; font-size:var(--text-sm); color:var(--fg-body); white-space:nowrap; display:flex; align-items:center; justify-content:space-between; gap:var(--space-2); }
+.dd-item:hover { background:var(--bg-soft); }
+.dd-item.active { background:var(--bg-soft); }
+.dd-item.sel { color:var(--brand-700); font-weight:600; background:var(--brand-50); }
+.dd-item .dd-tick { width:16px; height:16px; }
+.dd-sel { position:absolute; width:1px; height:1px; opacity:0; pointer-events:none; }
+.kpi-grid { display:grid; grid-template-columns:repeat(1, minmax(0,1fr)); gap:var(--space-4); }
+@media (min-width:640px)  { .kpi-grid { grid-template-columns:repeat(3, minmax(0,1fr)); } }
+.kpi-card { padding:var(--space-4) var(--space-6); display:flex; align-items:center; gap:var(--space-4); }
+.kpi-icon { width:44px; height:44px; border-radius:var(--radius-lg); flex-shrink:0; display:inline-flex; align-items:center; justify-content:center; }
+.kpi-icon svg { width:22px; height:22px; }
+.kpi-icon.t-brand { background:var(--brand-50); color:var(--brand-700); }
+.kpi-icon.t-ok    { background:var(--ok-bg); color:var(--ok-bar); }
+.kpi-icon.t-danger{ background:var(--danger-bg); color:var(--danger-bar); }
+.kpi-meta { min-width:0; }
+.kpi-label { font-size:var(--text-xs); color:var(--fg-sub); }
+.kpi-num { font-size:var(--text-xl); font-weight:700; color:var(--fg-strong); letter-spacing:.2px; line-height:1.3; }
+.chart-toolbar { display:flex; align-items:center; gap:var(--space-3); flex-wrap:wrap; }
+.legend { display:flex; flex-wrap:wrap; gap:4px var(--space-4); align-items:center; margin-bottom:var(--space-4); }
+.legend .lg { display:inline-flex; align-items:center; gap:var(--space-1); font-size:var(--text-xs); color:var(--fg-sub); }
+.legend .dot { width:9px; height:9px; border-radius:50%; flex-shrink:0; }
+.stat-body { position:relative; }
+.stat-body svg { display:block; width:100%; height:auto; }
+.stat-tip { position:absolute; display:none; z-index:10; pointer-events:none; background:#18181b; color:#f4f4f4; border:1px solid #3f3f46; border-radius:var(--radius-lg); padding:var(--space-2) var(--space-3); font-size:var(--text-xs); box-shadow:var(--shadow-lg); min-width:140px; }
+.stat-tip .tip-date { color:#a1a1aa; font-size:11px; margin-bottom:4px; }
+.stat-tip .tip-row { display:flex; align-items:center; gap:var(--space-2); margin:2px 0; color:#f4f4f4; }
+.stat-tip .tip-row .dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+.stat-tip .tip-val { margin-left:auto; padding-left:var(--space-3); font-weight:600; }
+.filter-bar { display:flex; align-items:center; gap:var(--space-2); flex-wrap:wrap; padding:var(--space-3) var(--space-6); border-bottom:1px solid var(--line); }
+.filter-bar .f-label { font-size:var(--text-xs); font-weight:600; letter-spacing:.5px; color:var(--fg-faint); }
+.filter-group { display:inline-flex; align-items:center; gap:var(--space-2); }
+.filter-divider { width:1px; height:20px; background:var(--line); margin:0 var(--space-1); }
+.filter-spacer { flex:1; }
+.filter-chips { display:flex; flex-wrap:wrap; align-items:center; gap:var(--space-2); padding:var(--space-2) var(--space-6); border-bottom:1px solid var(--line); background:var(--bg-panel2); }
+.chip-close { display:inline-flex; padding:1px; border:none; background:none; color:inherit; border-radius:var(--radius-sm); }
+.chip-close:hover { color:var(--fg-strong); }
+.chip-close svg { width:12px; height:12px; }
+.list-area { padding:var(--space-2) var(--space-6) var(--space-4); }
+/* ============ 表格壳（§7.3：表头 surface-1 小字 / 行分隔 hover / 超长省略） ============ */
+.tbl-wrap { overflow-x:auto; min-width:0; }
+.tbl { width:100%; border-collapse:collapse; font-size:var(--text-sm); table-layout:fixed; }
+.tbl thead th {
+  text-align:left; background:var(--bg-panel2); color:var(--fg-sub);
+  font-size:var(--text-xs); font-weight:600; letter-spacing:.5px;
+  padding:var(--space-2) var(--space-4);
+  border-bottom:1px solid var(--line);
+  white-space:nowrap;
+}
+.tbl tbody td {
+  padding:var(--space-2) var(--space-4); border-top:1px solid var(--line);
+  color:var(--fg-body); vertical-align:middle;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+.tbl tbody tr:hover td { background:var(--row-hover); }
+.tbl td.time, .tbl td .time { color:var(--fg-faint); }
+.tbl .c-time { width:156px; }
+.tbl .c-src { width:96px; }
+.tbl .c-ch { width:112px; }
+.tbl .c-ev { width:26%; }
+.tbl .c-title { width:auto; }
+.tbl .c-st { width:92px; }
+.tbl .t-title { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--fg-strong); }
+.tbl .t-cell { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.tbl .t-full { padding:0; border-top:0; }
+.tbl .t-full > .empty, .tbl .t-full > .err-block { padding:var(--space-8) var(--space-4); }
+/* 窄屏（≤639px）：「最近推送」表格改堆叠卡片——时间/状态一行、标题可换行、事件、来源/渠道，
+   六列全部完整可读，不再出现列被遮盖或时间被截断 */
+@media (max-width:639px) {
+  .tbl thead { display:none; }
+  .tbl, .tbl tbody { display:block; }
+  .tbl tbody tr {
+    display:grid; grid-template-columns:minmax(0,1fr) auto;
+    grid-template-areas:"t st" "ti ti" "ev ev" "src ch";
+    column-gap:var(--space-2); row-gap:2px;
+    padding:var(--space-2) var(--space-3);
+  }
+  .tbl tbody tr + tr { border-top:1px solid var(--line); }
+  .tbl tbody tr:hover { background:var(--row-hover); }
+  .tbl tbody tr:hover td { background:transparent; }
+  .tbl tbody td { display:block; padding:0; border-top:none; white-space:normal; overflow:visible; text-overflow:clip; }
+  .tbl .c-time, .tbl .c-src, .tbl .c-ch, .tbl .c-ev, .tbl .c-title, .tbl .c-st { width:auto; }
+  .tbl .c-time { grid-area:t; }
+  .tbl .c-st { grid-area:st; justify-self:end; }
+  .tbl .c-title { grid-area:ti; }
+  .tbl .c-ev { grid-area:ev; }
+  .tbl .c-src { grid-area:src; }
+  .tbl .c-ch { grid-area:ch; justify-self:end; }
+  .tbl .t-cell, .tbl .t-title { white-space:normal; overflow:visible; text-overflow:clip; }
+  .tbl .t-full { grid-column:1 / -1; grid-row:1 / -1; }
+}
+.day { margin-top:var(--space-2); }
+.day:first-child { margin-top:0; }
+.grp { display:flex; align-items:center; gap:var(--space-2); cursor:pointer; user-select:none; font-size:var(--text-xs); font-weight:600; letter-spacing:.4px; color:var(--fg-sub); padding:var(--space-2) var(--space-1); border-radius:var(--radius-md); transition:color .15s ease, background-color .15s ease; }
+.grp:hover { color:var(--fg-strong); background:var(--row-hover); }
+.grp svg { width:14px; height:14px; transition:transform .15s ease; color:var(--fg-faint); }
+.grp.collapsed svg { transform:rotate(-90deg); }
+.grp .grp-count { display:inline-flex; align-items:center; justify-content:center; min-width:20px; height:20px; padding:0 6px; border-radius:999px; background:var(--bg-soft); color:var(--fg-sub); font-size:11px; font-weight:500; margin-left:var(--space-1); }
+.grp-items { display:flex; flex-direction:column; gap:var(--space-2); }
+.grp.collapsed + .grp-items { display:none; }
+.msg-item { border:1px solid var(--line); border-radius:var(--radius-xl); background:var(--bg-panel); transition:border-color .15s ease, box-shadow .15s ease; }
+.msg-item:hover { border-color:var(--line-strong); }
+.msg-row { display:flex; align-items:center; gap:var(--space-3); width:100%; min-width:0; padding:var(--space-2) var(--space-4); background:none; border:none; cursor:pointer; text-align:left; color:inherit; font:inherit; }
+.msg-row:focus-visible { outline:2px solid var(--focus-ring); outline-offset:-2px; border-radius:var(--radius-xl); }
+.mcol { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0; }
+.m-time { flex:0 0 auto; }
+.m-src { flex:0 0 88px; color:var(--fg-strong); font-weight:500; }
+.m-ch { flex:0 0 auto; }
+.m-ev { flex:1 1 160px; color:var(--fg-sub); }
+.m-st { flex:0 0 auto; }
+.m-chev { flex:0 0 auto; width:16px; height:16px; color:var(--fg-faint); transition:transform .15s ease; }
+.msg-item.expanded .m-chev { transform:rotate(180deg); }
+.msg-head, .msg-title, .msg-meta { display:none; }
+@media (max-width:639px) { .msg-row { flex-wrap:wrap; row-gap:var(--space-1); } .m-ev { flex-basis:100%; } }
+.time { color:var(--fg-faint); font-size:var(--text-xs); white-space:nowrap; font-family:var(--font-mono); }
+.msg-body { display:none; padding:0 var(--space-4) var(--space-3); min-width:0; }
+.msg-item.expanded .msg-body { display:block; }
+.msg-body-inner { border-top:1px solid var(--line); padding-top:var(--space-2); }
+.msg-body-title { font-size:var(--text-sm); font-weight:500; color:var(--fg-strong); margin-bottom:var(--space-1); }
+.msg-body-text { color:var(--fg-body); word-break:break-word; white-space:pre-wrap; font-size:var(--text-sm); }
+.pager { display:flex; align-items:center; justify-content:space-between; gap:var(--space-3); flex-wrap:wrap; padding:var(--space-3) var(--space-6); border-top:1px solid var(--line); }
+.pager-info { font-size:var(--text-xs); color:var(--fg-faint); }
+.pager-nav { display:flex; align-items:center; gap:var(--space-1); }
+.page-btn { display:inline-flex; align-items:center; justify-content:center; min-width:32px; height:32px; padding:0 var(--space-1); border:1px solid transparent; border-radius:var(--radius-md); background:none; color:var(--fg-sub); font-size:var(--text-xs); cursor:pointer; transition:color .15s ease, background-color .15s ease, border-color .15s ease; }
+.page-btn:hover { background:var(--row-hover); color:var(--fg-strong); }
+.page-btn.current { background:var(--action-bg); color:var(--action-fg); font-weight:600; cursor:default; }
+.page-btn:disabled { opacity:.4; cursor:not-allowed; }
+.page-btn.ellipsis { cursor:default; }
+.page-btn.ellipsis:hover { background:none; color:var(--fg-sub); }
+.page-btn svg { width:16px; height:16px; }
+.inst-list { display:flex; flex-direction:column; gap:var(--space-2); }
+.inst { display:flex; flex-direction:column; border:1px solid var(--line); border-radius:var(--radius-xl); overflow:hidden; }
+/* 单行三段式：chevron | meta（名称/类型/状态，弹性） | controls（开关+操作，固定右侧）。
+   不用 flex-wrap——否则窄屏下换行位置随名称长度漂移，卡片之间对不齐 */
+.inst-main { display:flex; align-items:center; gap:var(--space-2); padding:var(--space-2) var(--space-3); min-width:0; }
+.inst-meta { display:flex; align-items:center; gap:var(--space-2); flex:1 1 auto; min-width:0; }
+.inst-name { font-weight:600; color:var(--fg-strong); font-size:var(--text-sm); min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.inst-type { display:inline-flex; flex-shrink:0; padding:0 var(--space-2); border-radius:var(--radius-sm); background:var(--bg-soft); color:var(--fg-sub); font-size:var(--text-xs); }
+.inst-state { display:inline-flex; align-items:center; flex-shrink:0; gap:var(--space-1); font-size:var(--text-xs); border-radius:999px; padding:1px var(--space-2); }
+.inst-state .dot { width:6px; height:6px; border-radius:50%; background:currentColor; }
+.inst-state.on  { background:var(--ok-bg); color:var(--ok-fg); }
+.inst-state.off { background:var(--bg-soft); color:var(--fg-sub); }
+.inst-chev { display:inline-flex; align-items:center; justify-content:center; width:28px; height:28px; border:none; background:none; color:var(--fg-faint); border-radius:var(--radius-md); cursor:pointer; transition:transform .15s ease, color .15s ease, background-color .15s ease; }
+.inst-chev:hover { color:var(--fg-strong); background:var(--row-hover); }
+.inst-chev svg { width:16px; height:16px; transition:transform .15s ease; }
+.inst-chev.open svg { transform:rotate(90deg); }
+.inst-controls { display:flex; align-items:center; gap:var(--space-1); flex-shrink:0; margin-left:auto; }
+.inst-spacer { flex:1; }
+/* 窄屏（≤639px）：meta 与 controls 拆两行、操作区右对齐——每张卡片结构一致、逐项对齐 */
+@media (max-width:639px) {
+  .inst-main { display:grid; grid-template-columns:28px minmax(0,1fr); grid-template-areas:"chev meta" ". controls"; row-gap:var(--space-2); }
+  .inst-chev { grid-area:chev; }
+  .inst-meta { grid-area:meta; }
+  .inst-controls { grid-area:controls; justify-content:flex-end; }
+}
+.inst-detail { display:flex; flex-direction:column; gap:var(--space-1); border-top:1px dashed var(--line); background:var(--bg-panel2); padding:var(--space-3) var(--space-4) var(--space-3) 44px; }
+/* [hidden] 需显式覆盖 author display:flex，否则细节区永远展开、折叠/展开钮失效 */
+.inst-detail[hidden] { display:none; }
+.detail-row { display:flex; align-items:center; gap:var(--space-2); font-size:var(--text-xs); min-width:0; flex-wrap:wrap; }
+.detail-row .dl { color:var(--fg-faint); width:88px; flex-shrink:0; }
+.detail-row .dv { color:var(--fg-body); word-break:break-all; min-width:0; }
+.detail-row code.dv { font-family:var(--font-mono); font-size:var(--text-xs); background:var(--bg-soft); padding:1px var(--space-2); border-radius:var(--radius-sm); }
+.inst-token { font-family:var(--font-mono); font-size:var(--text-xs); color:var(--fg-body); background:var(--bg-soft); border:1px solid var(--line); border-radius:var(--radius-md); padding:2px var(--space-2); min-width:120px; max-width:340px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; display:inline-block; }
+.set-pane { padding-top:var(--space-4); display:flex; flex-direction:column; gap:var(--space-3); }
+.set-toolbar { display:flex; align-items:center; gap:var(--space-2); flex-wrap:wrap; }
+.set-toolbar .search { flex:1 1 240px; max-width:340px; min-width:160px; }
+.set-toolbar .toolbar-actions { margin-left:auto; display:flex; align-items:center; gap:var(--space-2); }
+.chk-group { display:flex; flex-wrap:wrap; gap:var(--space-2) var(--space-4); padding-top:2px; }
+.chk-group-title { display:flex; align-items:center; gap:var(--space-2); width:100%; font-size:var(--text-xs); font-weight:600; letter-spacing:.4px; color:var(--fg-faint); margin-top:var(--space-2); }
+.chk-tools { display:flex; align-items:center; gap:var(--space-2); flex-wrap:wrap; }
+.chk-count { font-size:var(--text-xs); color:var(--fg-faint); }
+.secret-wrap { display:flex; gap:var(--space-1); align-items:stretch; }
+.secret-wrap .input { flex:1; min-width:0; }
+.hint { font-size:var(--text-xs); color:var(--fg-faint); line-height:1.6; }
+.set-hint { font-size:var(--text-xs); color:var(--fg-faint); }
+.set-row { display:flex; align-items:center; gap:var(--space-3); flex-wrap:wrap; padding:var(--space-2) 0; }
+.set-row + .set-row { border-top:1px solid var(--line); }
+.set-row .set-label { font-weight:500; color:var(--fg-strong); font-size:var(--text-sm); min-width:88px; }
+.num-in { width:96px; }
+.set-dd { width:min(320px, 100%); }
+/* ================= 后台管理侧边栏布局（§3.1 / §7.4 vanilla 落地） ================= */
+/* 左侧导航项 */
+.sidebar { width:240px; flex-shrink:0; display:flex; flex-direction:column; background:var(--bg-panel); border-right:1px solid var(--line); overflow:hidden; transition:width .2s ease; }
+html.nav-sm .sidebar { width:64px; }
+.sidebar-logo { flex-shrink:0; display:flex; align-items:center; gap:var(--space-3); height:64px; padding:0 var(--space-6); border-bottom:1px solid var(--line); white-space:nowrap; min-width:0; }
+.sidebar-logo .brand-mark { width:32px; height:32px; }
+.sidebar-logo .brand-mark svg { width:18px; height:18px; }
+.sidebar-name { font-size:var(--text-base); font-weight:600; color:var(--fg-strong); overflow:hidden; text-overflow:ellipsis; }
+html.nav-sm .sidebar-logo { justify-content:center; padding:0; }
+html.nav-sm .sidebar-name { display:none; }
+.sidebar-brand { display:flex; flex-direction:column; justify-content:center; min-width:0; }
+.sidebar-brand .sidebar-name { line-height:1.35; }
+.ver { display:inline-flex; align-items:center; font-family:var(--font-mono); font-size:var(--text-xs); color:var(--fg-faint); line-height:1.5; letter-spacing:.3px; white-space:nowrap; }
+.ver:empty { display:none; }
+html.nav-sm .ver { display:none; }
+.sidebar-x { display:none; margin-left:auto; color:var(--fg-sub); }
+.sidebar-nav { flex:1; min-height:0; overflow-y:auto; padding:var(--space-3); display:flex; flex-direction:column; gap:var(--space-1); }
+.nav-item { display:flex; align-items:center; gap:var(--space-3); padding:var(--space-2) var(--space-3); border-radius:var(--radius-lg); color:var(--fg-body); font-weight:500; font-size:var(--text-sm); line-height:1.35; border:0; background:none; cursor:pointer; text-decoration:none; white-space:nowrap; flex-shrink:0; transition:background-color .15s ease, color .15s ease; }
+.nav-item svg { width:16px; height:16px; flex-shrink:0; }
+.nav-item:hover { background:var(--bg-soft); color:var(--fg-strong); }
+.nav-item.active { background:var(--brand-50); color:var(--brand-700); font-weight:600; }
+html.dark .nav-item.active { background:var(--brand-900); color:var(--brand-500); }
+.nav-text { overflow:hidden; text-overflow:ellipsis; min-width:0; }
+html.nav-sm .nav-text { display:none; }
+html.nav-sm .nav-item { justify-content:center; padding:var(--space-3) 0; }
+html.nav-sm .sidebar-nav { padding:var(--space-3) var(--space-2); }
+.sidebar-foot { flex-shrink:0; margin-top:auto; padding:var(--space-3); border-top:1px solid var(--line); }
+.side-collapse { display:flex; align-items:center; gap:var(--space-3); width:100%; padding:var(--space-2) var(--space-3); border:0; border-radius:var(--radius-lg); background:none; color:var(--fg-sub); font-size:var(--text-sm); cursor:pointer; transition:background-color .15s ease, color .15s ease; }
+.side-collapse:hover { background:var(--bg-soft); color:var(--fg-strong); }
+.side-collapse svg { width:16px; height:16px; flex-shrink:0; }
+.side-collapse .ic-close { display:none; }
+html.nav-sm .side-collapse { justify-content:center; padding:var(--space-3) 0; }
+html.nav-sm .side-collapse .ic-open { display:none; }
+html.nav-sm .side-collapse .ic-close { display:inline-block; }
+/* 顶栏：汉堡（移动抽屉）+ 面包屑 + 右侧操作 */
+.menu-btn { display:none; flex-shrink:0; }
+.crumb { display:flex; align-items:center; gap:var(--space-1); min-width:0; font-size:var(--text-sm); white-space:nowrap; }
+.crumb svg { width:14px; height:14px; color:var(--fg-faint); flex-shrink:0; }
+.crumb-root { color:var(--fg-sub); }
+.crumb-cur { color:var(--fg-strong); font-weight:600; overflow:hidden; text-overflow:ellipsis; }
+/* 视图切换：一次只显示一个 .view */
+.view { display:block; }
+.view[hidden] { display:none; }
+/* 移动抽屉（<768px）：左滑 + 遮罩 + 汉堡唤出；折叠钮隐藏 */
+.drawer-mask { display:none; position:fixed; inset:0; z-index:931; background:rgba(24,24,27,.5); backdrop-filter:blur(2px); -webkit-backdrop-filter:blur(2px); }
+body.drawer-open .drawer-mask { display:block; }
+@media (max-width:767px) {
+  .menu-btn { display:inline-flex; }
+  .sidebar { position:fixed; top:0; bottom:0; left:0; z-index:940; width:288px; transform:translateX(-102%); transition:transform .2s ease; }
+  body.drawer-open .sidebar { transform:translateX(0); box-shadow:var(--shadow-lg); }
+  .sidebar-x { display:inline-flex; }
+  .side-collapse { display:none; }
+  .sidebar-foot { display:none; }
+  html.nav-sm .sidebar { width:288px; }
+  html.nav-sm .sidebar-name { display:block; }
+  html.nav-sm .sidebar-brand { display:flex; }
+  html.nav-sm .ver { display:inline-flex; }
+  html.nav-sm .nav-text { display:inline; }
+  html.nav-sm .nav-item { justify-content:flex-start; padding:var(--space-2) var(--space-3); }
+  html.nav-sm .sidebar-nav { padding:var(--space-3); }
+}
+@media (min-width:768px) {
+  .sidebar-x { display:none; }
+  body.drawer-open { overflow:hidden; }
+}
+/* ================= 帮助视图（#view-help）：原 help.html 独有样式并入 =================
+   作用域一律限定在 #view-help 内，避免污染其余五视图 / .tbl / .card / table 等既有样式。
+   布局沿用 help.html：<1024 顶部 details 折叠目录 + 单栏正文；≥1024 双栏
+   （doc-body 弹性 max-880 + 右栏 .toc-rail sticky 目录，.main 是滚动容器）。
+   命名冲突处理：正文 .card → .doc-card（ui 的 .card 是无内边距的卡片壳，语义不同）；
+   目录锚点 id 加 help- 前缀（ui 已有 id=source / id=channel 过滤器隐藏域）。 */
+#view-help .doc-body { flex:1 1 auto; min-width:0; max-width:880px; }
+#view-help .toc-fold { display:block; background:var(--bg-panel); border:1px solid var(--line); border-radius:var(--radius-xl); margin-bottom:var(--space-8); }
+#view-help .toc-fold summary { display:flex; align-items:center; gap:var(--space-2); list-style:none; padding:var(--space-3) var(--space-4); color:var(--fg-body); font-weight:500; font-size:var(--text-sm); cursor:pointer; user-select:none; }
+#view-help .toc-fold summary::-webkit-details-marker { display:none; }
+#view-help .toc-fold summary::marker { content:""; }
+#view-help .toc-fold summary svg { width:16px; height:16px; margin-left:auto; color:var(--fg-faint); flex-shrink:0; transition:transform .2s ease; }
+#view-help .toc-fold[open] summary { border-bottom:1px solid var(--line); }
+#view-help .toc-fold[open] summary svg { transform:rotate(180deg); }
+/* 目录纵向树状：一级顶格、二级缩进，避免各级标题挤在同一行 */
+#view-help .toc-fold .toc-links { display:flex; flex-direction:column; gap:1px; padding:var(--space-2) var(--space-3) var(--space-3); }
+#view-help .toc-fold .toc-links a { border-left:none; }
+#view-help .toc-fold .toc-links a.sub { margin-left:var(--space-6); }
+#view-help .toc-fold .toc-links a.sub::before { content:"—"; margin-right:var(--space-1); color:var(--fg-faint); }
+#view-help .toc-links a { display:flex; align-items:center; padding:var(--space-1) var(--space-2); color:var(--fg-sub); font-size:var(--text-sm); border-left:2px solid transparent; line-height:1.5; }
+#view-help .toc-links a:hover { color:var(--link-hover); }
+#view-help .toc-links a.sub { margin-left:var(--space-3); color:var(--fg-faint); font-size:var(--text-xs); }
+#view-help .toc-links a.active { color:var(--brand-600); border-left-color:var(--brand-600); font-weight:500; }
+html.dark #view-help .toc-links a.active { color:var(--brand-500); border-left-color:var(--brand-500); }
+#view-help .toc-rail { display:none; }
+#view-help .toc-rail-title { font-size:var(--text-xs); font-weight:600; letter-spacing:.5px; color:var(--fg-faint); padding:0 var(--space-2) var(--space-2); }
+#view-help .toc-rail .toc-links { display:flex; flex-direction:column; gap:1px; }
+#view-help section[aria-labelledby] h3 {
+  font-size:var(--text-lg); font-weight:600; color:var(--fg-strong);
+  margin:var(--space-8) 0 var(--space-3); padding-bottom:var(--space-2);
+  border-bottom:1px solid var(--line); display:flex; align-items:center; gap:var(--space-2);
+}
+#view-help section[aria-labelledby] h4 { font-size:var(--text-base); font-weight:600; color:var(--fg-strong); margin:var(--space-6) 0 var(--space-2); }
+#view-help [id] { scroll-margin-top:var(--space-6); }
+#view-help ol, #view-help ul { padding-left:var(--space-6); margin:var(--space-2) 0; }
+#view-help li { margin:var(--space-1) 0; }
+#view-help .doc-card { background:var(--bg-panel); border:1px solid var(--line); border-radius:var(--radius-xl); padding:var(--space-4) var(--space-6); margin:var(--space-4) 0; }
+#view-help .hint { margin-top:var(--space-1); }
+#view-help .step {
+  display:inline-flex; align-items:center; justify-content:center;
+  width:24px; height:24px; border-radius:50%; flex-shrink:0;
+  background:var(--brand-50); color:var(--brand-700); font-weight:700; font-size:var(--text-sm);
+}
+#view-help code { background:var(--bg-soft); border:1px solid var(--line); border-radius:var(--radius-sm); padding:1px var(--space-2); font-size:var(--text-xs); }
+#view-help pre { background:var(--bg-field); border:1px solid var(--line); border-radius:var(--radius-lg); padding:var(--space-3) var(--space-4); overflow-x:auto; font-size:var(--text-xs); margin:var(--space-2) 0; color:var(--fg-body); }
+#view-help pre code { background:none; border:none; padding:0; font-size:var(--text-xs); }
+#view-help table { width:100%; border-collapse:collapse; margin:var(--space-2) 0; font-size:var(--text-sm); }
+#view-help th, #view-help td { text-align:left; padding:var(--space-2) var(--space-3); border-bottom:1px solid var(--line); vertical-align:top; }
+#view-help th { background:var(--bg-panel2); color:var(--fg-sub); font-weight:600; font-size:var(--text-xs); }
+#view-help td { color:var(--fg-body); }
+#view-help .page-head strong { color:var(--fg-strong); font-weight:600; }
+@media (min-width:1024px) {
+  #view-help .doc { display:flex; align-items:flex-start; gap:var(--space-8); }
+  #view-help .toc-fold { display:none; }
+  #view-help .toc-rail { display:block; position:sticky; top:var(--space-4); flex:0 0 232px; width:232px; max-height:calc(100vh - 96px); overflow-y:auto; background:var(--bg-panel); border:1px solid var(--line); border-radius:var(--radius-xl); padding:var(--space-3); }
+}
+</style>
+</head>
+<body>
+<div class="layout">
+  <!-- 左侧侧边栏（§3.1：底 surface-0 右边框；Logo h-16；菜单区独立滚动；底部折叠钮） -->
+  <aside class="sidebar" id="sidebar" aria-label="主导航">
+    <div class="sidebar-logo">
+      <span class="brand-mark" aria-hidden="true" data-icon="bird"></span>
+      <span class="sidebar-brand">
+        <span class="sidebar-name">青鸟 Bluebird</span>
+        <span class="ver" id="verBadge" title="部署版本">__BB_VERSION__</span>
+      </span>
+      <button type="button" class="btn btn-ghost btn-icon sidebar-x" id="drawerClose" aria-label="关闭菜单" title="关闭菜单" data-icon="x"></button>
+    </div>
+    <nav class="sidebar-nav" id="sidebar-nav" aria-label="主导航">
+      <a class="nav-item active" id="nav-overview" href="#/overview" data-view="overview" aria-current="page"><span aria-hidden="true" data-icon="layoutDashboard"></span><span class="nav-text">概览</span></a>
+      <a class="nav-item" id="nav-logs" href="#/logs" data-view="logs"><span aria-hidden="true" data-icon="scrollText"></span><span class="nav-text">推送记录</span></a>
+      <a class="nav-item" id="nav-sources" href="#/sources" data-view="sources"><span aria-hidden="true" data-icon="radio"></span><span class="nav-text">通知源</span></a>
+      <a class="nav-item" id="nav-channels" href="#/channels" data-view="channels"><span aria-hidden="true" data-icon="send"></span><span class="nav-text">分发渠道</span></a>
+      <a class="nav-item" id="nav-settings" href="#/settings" data-view="settings"><span aria-hidden="true" data-icon="settings"></span><span class="nav-text">系统设置</span></a>
+      <a class="nav-item" id="nav-help" href="#/help" data-view="help"><span aria-hidden="true" data-icon="helpCircle"></span><span class="nav-text">帮助页面</span></a>
+    </nav>
+    <div class="sidebar-foot">
+      <button type="button" class="side-collapse" id="sideCollapse" aria-label="折叠侧边栏" aria-expanded="true" title="折叠侧边栏">
+        <svg class="ic-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m11 17-5-5 5-5"/><path d="m18 17-5-5 5-5"/></svg>
+        <svg class="ic-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 17 5-5-5-5"/><path d="m13 17 5-5-5-5"/></svg>
+        <span class="nav-text">收起</span>
+      </button>
+    </div>
+  </aside>
+  <!-- 右侧：顶栏（h-16）+ 主内容（flex-1 overflow-y-auto） -->
+  <div class="content-col">
+    <header class="topbar">
+      <div class="topbar-inner">
+        <button type="button" class="btn btn-ghost btn-icon menu-btn" id="navToggle" aria-label="打开菜单" aria-expanded="false" title="打开菜单" data-icon="menu"></button>
+        <nav class="crumb" aria-label="面包屑">
+          <span class="crumb-root">青鸟 Bluebird</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+          <span class="crumb-cur" id="crumbTitle">概览</span>
+        </nav>
+      </div>
+    </header>
+    <main class="main" id="main">
+      <div class="page">
+
+        <!-- ============ 视图 1：概览 ============ -->
+        <section class="view" id="view-overview" aria-label="概览">
+          <div class="page-head">
+            <h2>推送审计</h2>
+            <p>每一次 Webhook 事件的分发去向与结果，按通知源 / 分发渠道 / 是否成功维度聚合。</p>
+          </div>
+
+          <!-- KPI 卡行 -->
+          <section class="kpi-grid" aria-label="关键指标">
+            <div class="card kpi-card">
+              <span class="kpi-icon t-brand" aria-hidden="true" data-icon="inbox"></span>
+              <div class="kpi-meta"><div class="kpi-num" id="kpi-total">–</div><div class="kpi-label">推送总数</div></div>
+            </div>
+            <div class="card kpi-card">
+              <span class="kpi-icon t-ok" aria-hidden="true" data-icon="circleCheck"></span>
+              <div class="kpi-meta"><div class="kpi-num" id="kpi-ok">–</div><div class="kpi-label">成功</div></div>
+            </div>
+            <div class="card kpi-card">
+              <span class="kpi-icon t-danger" aria-hidden="true" data-icon="circleX"></span>
+              <div class="kpi-meta"><div class="kpi-num" id="kpi-err">–</div><div class="kpi-label">失败</div></div>
+            </div>
+          </section>
+
+          <!-- 趋势统计卡 -->
+          <section class="card stack sec-gap" aria-label="推送趋势">
+            <div class="card-head">
+              <div>
+                <div class="section-title">推送趋势</div>
+                <div class="section-desc" id="stat-range"></div>
+              </div>
+              <div class="chart-toolbar">
+                <div class="seg" id="stat-group" role="group" aria-label="趋势分组维度">
+                  <button type="button" class="seg-btn active" data-g="source" aria-pressed="true" onclick="setStatGroup('source', this)">按通知源</button>
+                  <button type="button" class="seg-btn" data-g="channel" aria-pressed="false" onclick="setStatGroup('channel', this)">按分发渠道</button>
+                  <button type="button" class="seg-btn" data-g="status" aria-pressed="false" onclick="setStatGroup('status', this)">按是否成功</button>
+                </div>
+              </div>
+            </div>
+            <div class="card-body stat-body" id="stat-body"><div class="skeleton sk-chart"></div></div>
+          </section>
+
+          <!-- 最近推送摘要（表格壳：表头小字大写 / 行分隔 hover / 无分页 ≤8 行） -->
+          <section class="card sec-gap" aria-label="最近推送">
+            <div class="card-head">
+              <div>
+                <div class="section-title">最近推送</div>
+                <div class="section-desc">近 7 天最新 8 条推送记录，完整内容可在「推送记录」中展开查看</div>
+              </div>
+              <a class="btn btn-ghost btn-sm" href="#/logs">全部推送记录</a>
+            </div>
+            <div class="tbl-wrap">
+              <table class="tbl">
+                <thead>
+                  <tr>
+                    <th scope="col" class="c-time">时间</th>
+                    <th scope="col" class="c-src">来源</th>
+                    <th scope="col" class="c-ch">渠道</th>
+                    <th scope="col" class="c-ev">事件</th>
+                    <th scope="col" class="c-title">标题</th>
+                    <th scope="col" class="c-st">状态</th>
+                  </tr>
+                </thead>
+                <tbody id="recent-body"></tbody>
+              </table>
+            </div>
+          </section>
+        </section>
+
+        <!-- ============ 视图 2：推送记录 ============ -->
+        <section class="view" id="view-logs" hidden aria-label="推送记录">
+          <div class="page-head">
+            <h2>推送记录</h2>
+            <p>按来源 / 渠道 / 事件 / 时间范围过滤，分组查看每一条推送的分发结果。</p>
+          </div>
+          <section class="card sec-gap" aria-label="推送记录列表">
+            <div class="filter-bar">
+              <span class="f-label">过滤</span>
+              <div class="dd" id="dd-source">
+                <button type="button" class="dd-btn" aria-haspopup="listbox" aria-expanded="false" aria-label="按来源过滤"><span class="dd-label">全部 Hook 源</span><span class="dd-chev" data-icon="chevronDown" aria-hidden="true"></span></button>
+                <div class="dd-menu" role="listbox" aria-label="来源过滤"></div>
+                <input type="hidden" id="source" value="">
+              </div>
+              <div class="dd" id="dd-event">
+                <button type="button" class="dd-btn" aria-haspopup="listbox" aria-expanded="false" aria-label="按事件类型过滤"><span class="dd-label">全部事件</span><span class="dd-chev" data-icon="chevronDown" aria-hidden="true"></span></button>
+                <div class="dd-menu" role="listbox" aria-label="事件过滤"></div>
+                <input type="hidden" id="event" value="">
+              </div>
+              <div class="dd" id="dd-channel">
+                <button type="button" class="dd-btn" aria-haspopup="listbox" aria-expanded="false" aria-label="按渠道过滤"><span class="dd-label">全部渠道</span><span class="dd-chev" data-icon="chevronDown" aria-hidden="true"></span></button>
+                <div class="dd-menu" role="listbox" aria-label="渠道过滤"></div>
+                <input type="hidden" id="channel" value="">
+              </div>
+              <div class="dd" id="dd-days">
+                <button type="button" class="dd-btn" aria-haspopup="listbox" aria-expanded="false" aria-label="按时间范围过滤" title="「今天」指所选时区当天的自然日（0 点起）"><span class="dd-label">近 7 天</span><span class="dd-chev" data-icon="chevronDown" aria-hidden="true"></span></button>
+                <div class="dd-menu" role="listbox" aria-label="时间范围过滤"></div>
+                <input type="hidden" id="days" value="7">
+              </div>
+              <span class="filter-divider" aria-hidden="true"></span>
+              <span class="f-label">分组</span>
+              <div class="dd right" id="dd-group">
+                <button type="button" class="dd-btn" aria-haspopup="listbox" aria-expanded="false" aria-label="列表分组方式" title="按日期 / 来源 / 渠道分组，点击分组标题可折叠"><span class="dd-label">按日期</span><span class="dd-chev" data-icon="chevronDown" aria-hidden="true"></span></button>
+                <div class="dd-menu" role="listbox" aria-label="列表分组方式"></div>
+                <input type="hidden" id="group" value="day">
+              </div>
+            </div>
+            <div class="list-area" id="list"><div class="empty">加载中…</div></div>
+            <div class="pager" id="pager" hidden></div>
+          </section>
+        </section>
+
+        <!-- ============ 视图 3：通知源 ============ -->
+        <section class="view" id="view-sources" hidden aria-label="通知源">
+          <div class="page-head">
+            <h2>通知源</h2>
+            <p>Webhook 事件来源实例（GitHub / 通用），管理与启停。</p>
+          </div>
+          <section class="card sec-gap" aria-label="通知源实例">
+            <div class="card-body d-body-flush">
+              <div class="set-pane">
+                <div class="set-toolbar">
+                  <div class="search"><span aria-hidden="true" data-icon="search"></span><input id="src-search" class="input" placeholder="搜索来源名称…" oninput="renderInstances()"></div>
+                  <div class="dd" id="dd-src-type-filter">
+                    <button type="button" class="dd-btn" aria-haspopup="listbox" aria-expanded="false" aria-label="按类型过滤"><span class="dd-label">全部类型</span><span class="dd-chev" data-icon="chevronDown" aria-hidden="true"></span></button>
+                    <div class="dd-menu" role="listbox" aria-label="类型过滤"></div>
+                    <input type="hidden" id="src-type-filter" value="">
+                  </div>
+                  <div class="dd" id="dd-src-state-filter">
+                    <button type="button" class="dd-btn" aria-haspopup="listbox" aria-expanded="false" aria-label="按状态过滤"><span class="dd-label">全部状态</span><span class="dd-chev" data-icon="chevronDown" aria-hidden="true"></span></button>
+                    <div class="dd-menu" role="listbox" aria-label="状态过滤"></div>
+                    <input type="hidden" id="src-state-filter" value="">
+                  </div>
+                  <div class="toolbar-actions">
+                    <button class="btn btn-primary" type="button" onclick="openSourceForm(-1)" data-icon="plus">添加通知源</button>
+                  </div>
+                </div>
+                <div class="inst-list" id="src-list"></div>
+                <p class="set-hint">Webhook 地址：<span class="mono">&lt;部署路径&gt;/hooks/&lt;实例 ID&gt;</span>（改名不受影响，在详情行可复制）；勾选「分发渠道」可限定该来源的推送目标。</p>
+              </div>
+            </div>
+          </section>
+        </section>
+
+        <!-- ============ 视图 4：分发渠道 ============ -->
+        <section class="view" id="view-channels" hidden aria-label="分发渠道">
+          <div class="page-head">
+            <h2>分发渠道</h2>
+            <p>通知接收目标实例（Bark / 飞书 / 企业微信 / PushDeer / 通用 Webhook），管理与启停。</p>
+          </div>
+          <section class="card sec-gap" aria-label="分发渠道实例">
+            <div class="card-body d-body-flush">
+              <div class="set-pane">
+                <div class="set-toolbar">
+                  <div class="search"><span aria-hidden="true" data-icon="search"></span><input id="ch-search" class="input" placeholder="搜索渠道名称…" oninput="renderInstances()"></div>
+                  <div class="dd" id="dd-ch-type-filter">
+                    <button type="button" class="dd-btn" aria-haspopup="listbox" aria-expanded="false" aria-label="按类型过滤"><span class="dd-label">全部类型</span><span class="dd-chev" data-icon="chevronDown" aria-hidden="true"></span></button>
+                    <div class="dd-menu" role="listbox" aria-label="类型过滤"></div>
+                    <input type="hidden" id="ch-type-filter" value="">
+                  </div>
+                  <div class="dd" id="dd-ch-state-filter">
+                    <button type="button" class="dd-btn" aria-haspopup="listbox" aria-expanded="false" aria-label="按状态过滤"><span class="dd-label">全部状态</span><span class="dd-chev" data-icon="chevronDown" aria-hidden="true"></span></button>
+                    <div class="dd-menu" role="listbox" aria-label="状态过滤"></div>
+                    <input type="hidden" id="ch-state-filter" value="">
+                  </div>
+                  <div class="toolbar-actions">
+                    <button class="btn btn-primary" type="button" onclick="openChannelForm(-1)" data-icon="plus">添加渠道</button>
+                  </div>
+                </div>
+                <div class="inst-list" id="ch-list"></div>
+              </div>
+            </div>
+          </section>
+        </section>
+
+        <!-- ============ 视图 5：系统设置 ============ -->
+        <section class="view" id="view-settings" hidden aria-label="系统设置">
+          <div class="page-head">
+            <h2>系统设置</h2>
+            <p>数据保留与历史清理、全局通知偏好、时间显示时区。</p>
+          </div>
+          <section class="card sec-gap" aria-label="通用设置">
+            <div class="card-head">
+              <div>
+                <div class="section-title">通用</div>
+                <div class="section-desc">审计日志的保留天数与历史清理、时间显示时区。</div>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="set-row">
+                <span class="set-label">日志保留天数</span>
+                <input type="number" id="retention-days" class="input num-in" min="1" max="3650" aria-label="日志保留天数">
+                <span class="set-hint">天（超期记录在下次写入时自动清理）</span>
+                <span class="inst-spacer"></span>
+                <button class="btn btn-primary" type="button" onclick="saveRetention()">保存</button>
+              </div>
+              <div class="set-row">
+                <span class="set-label">显示时区</span>
+                <span class="set-hint">记录/最近推送的时间显示；修改立即生效并记住。</span>
+                <span class="inst-spacer"></span>
+                <div class="dd block set-dd" id="dd-tz">
+                  <button type="button" class="dd-btn" aria-haspopup="listbox" aria-expanded="false" aria-label="显示时区"><span class="dd-label">Asia/Shanghai</span><span class="dd-chev" data-icon="chevronDown" aria-hidden="true"></span></button>
+                  <div class="dd-menu" role="listbox" aria-label="显示时区"></div>
+                  <input type="hidden" id="tz" value="Asia/Shanghai">
+                </div>
+              </div>
+              <div class="set-row">
+                <span class="set-label">清空推送记录</span>
+                <span class="set-hint">永久删除全部推送历史，不可恢复。</span>
+                <span class="inst-spacer"></span>
+                <button class="btn btn-danger" type="button" onclick="clearHistory()" data-icon="trash2">清空</button>
+              </div>
+            </div>
+          </section>
+          <section class="card sec-gap" aria-label="通知设置">
+            <div class="card-head">
+              <div>
+                <div class="section-title">通知</div>
+                <div class="section-desc">推送行为的全局偏好。</div>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="set-row">
+                <span class="set-label">通知本人操作</span>
+                <span class="set-hint">你本人账号触发的 GitHub 事件也推送；默认忽略，避免自扰。</span>
+                <span class="inst-spacer"></span>
+                <label class="switch" title="通知本人操作">
+                  <input type="checkbox" role="switch" aria-checked="false" aria-label="通知本人操作" id="selfNotify" onchange="saveSelfNotify(this.checked, this)">
+                  <span class="track"></span><span class="thumb"></span>
+                </label>
+              </div>
+            </div>
+          </section>
+        </section>
+
+        <!-- ============ 视图 6：帮助页面（原 help.html 正文并入；目录 <1024 顶部折叠 / ≥1024 右栏 sticky） ============ -->
+        <section class="view" id="view-help" hidden aria-label="帮助页面">
+          <div class="page-head">
+            <h2>帮助页面</h2>
+            <p>如何添加信息源 / 分发渠道 —— 青鸟 Bluebird 由两层组成：<strong>通知源</strong>是事件的发送方（GitHub 仓库事件 / 通用 HTTP 调用），<strong>分发渠道</strong>是通知的接收方（Bark / 飞书 / 企业微信 / PushDeer / 通用 Webhook）。两类都支持添加多个实例，互相独立启停，推送时并行分发、单实例异常不影响其他。</p>
+          </div>
+
+          <div class="doc">
+            <div class="doc-body">
+              <details class="toc-fold" id="tocFold">
+                <summary>目录
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+                </summary>
+                <div class="toc-links">
+                  <a href="#help-setup">进入设置</a>
+                  <a href="#help-source">添加通知源</a>
+                  <a class="sub" href="#help-github-source">GitHub 信息源</a>
+                  <a class="sub" href="#help-generic-source">通用信息源</a>
+                  <a href="#help-channel">添加分发渠道</a>
+                  <a class="sub" href="#help-bark">Bark</a>
+                  <a class="sub" href="#help-feishu">飞书</a>
+                  <a class="sub" href="#help-wecom">企业微信</a>
+                  <a class="sub" href="#help-pushdeer">PushDeer</a>
+                  <a class="sub" href="#help-webhook">通用 Webhook</a>
+                  <a href="#help-verify">验证</a>
+                  <a href="#help-faq">常见问题</a>
+                </div>
+              </details>
+
+              <section aria-labelledby="help-setup-h">
+                <h3 id="help-setup-h"><span class="step">1</span><span id="help-setup">进入设置</span></h3>
+                <p>左侧菜单进入<strong>系统设置</strong>，按分组卡片排列：</p>
+                <div class="doc-card">
+                  <table>
+                    <thead><tr><th scope="col">分组</th><th scope="col">用途</th></tr></thead>
+                    <tbody>
+                      <tr><td>通用</td><td>日志保留天数、清空全部历史</td></tr>
+                      <tr><td>通知</td><td>本人账号触发的事件是否推送（全局开关）</td></tr>
+                      <tr><td>时区</td><td>推送记录 / 最近推送时间显示的时区</td></tr>
+                    </tbody>
+                  </table>
+                  <p class="hint">通知源 / 分发渠道在左侧菜单对应页面管理：顶部搜索框与类型 / 状态过滤，列表项左侧开关用于临时启停，右侧铅笔 / 垃圾桶图标为编辑与删除。</p>
+                </div>
+              </section>
+
+              <section aria-labelledby="help-source-h">
+                <h3 id="help-source-h"><span class="step">2</span><span id="help-source">添加通知源</span></h3>
+
+                <h4 id="help-github-source">GitHub 信息源</h4>
+                <ol>
+                  <li>设置 → 通知源 → 点击「添加通知源」</li>
+                  <li>填写：<strong>名称</strong>（字母 / 数字 / <code>-_.</code>，如 <code>github</code>，仅作展示名，可随时改）与<strong>类型</strong>（GitHub）。<strong>Secret</strong> 无需填写：保存时由系统自动生成，在列表详情行查看 / 复制</li>
+                  <li><strong>事件类型</strong>默认全选：取消勾选的事件不推送；<strong>全不选 = 该来源不推送任何事件</strong></li>
+                  <li><strong>通知渠道</strong>默认全选：取消勾选即不推到对应渠道；<strong>全不选 = 该来源不推送</strong></li>
+                  <li><strong>通知本人操作</strong>：默认忽略你本人账号触发的事件，避免自扰（在「系统设置 → 通知」调整全局开关）</li>
+                  <li>保存后点击列表行<strong>展开箭头</strong>，用复制按钮取该来源的 Webhook 地址（按来源 ID 生成，<strong>改名不受影响</strong>）与 Secret</li>
+                </ol>
+                <p>再到 GitHub 仓库 <code>Settings → Webhooks → Add webhook</code>：</p>
+                <div class="doc-card">
+                  <ul>
+                    <li><strong>Payload URL</strong>：<code>https://&lt;你的域名&gt;/hooks/&lt;来源 ID&gt;</code>（面板来源详情里复制；旧的名字形式仍兼容，但改名后会失效）</li>
+                    <li><strong>Content type</strong>：<code>application/json</code></li>
+                    <li><strong>Secret</strong>：填面板来源详情里展示的 Secret（保存时自动生成；若重新生成需同步更新此处）</li>
+                    <li><strong>Which events</strong>：按需选择（建议 Select individual events：star / fork / Issues / Pull requests / Workflow runs）</li>
+                  </ul>
+                  <p class="hint">创建后点击 <code>Redeliver</code> 可立刻测试。</p>
+                </div>
+
+                <h4 id="help-generic-source">通用信息源</h4>
+                <p>适用于任何能发 HTTP POST 的场景（脚本、CI、监控系统等）：</p>
+                <ol>
+                  <li>设置 → 通知源 →「添加通知源」，类型选<strong>通用</strong></li>
+                  <li><strong>Token</strong> 无需填写：保存时由系统自动生成，保存后在列表详情中查看、复制或<strong>重新生成</strong></li>
+                  <li>保存后把 Token 配置到调用方</li>
+                </ol>
+                <p>调用方式（<code>Authorization: Bearer &lt;Token&gt;</code> 必填）：</p>
+                <pre><code>curl -X POST https://&lt;你的域名&gt;/hooks/&lt;来源 ID&gt; \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer &lt;Token&gt;" \
+  -d '{"title": "构建成功", "body": "server-monitor 任务通过", "event": "build", "repo": "ops"}'</code></pre>
+                <ul>
+                  <li>JSON 字段：<code>title</code>（标题）、<code>body</code>（正文）、<code>event</code>（事件名，配合来源级事件白名单过滤）、<code>repo</code>（仓库名）</li>
+                  <li>也支持纯文本：首行为标题，其余为正文</li>
+                </ul>
+              </section>
+
+              <section aria-labelledby="help-channel-h">
+                <h3 id="help-channel-h"><span class="step">3</span><span id="help-channel">添加分发渠道</span></h3>
+
+                <h4 id="help-bark">Bark（iPhone 推送）</h4>
+                <ol>
+                  <li>iPhone 安装 <strong>Bark</strong> App（App Store），打开后记录专属 <strong>Key</strong></li>
+                  <li>设置 → 分发渠道 →「添加渠道」：名称如 <code>MyIPhone</code>，类型 Bark，填 Key（必填）与<strong>服务地址</strong>（默认 <code>https://api.day.app</code>，自建服务器时改）</li>
+                  <li>保存。Bark 通知按<strong>信息源分组</strong>（每个来源在通知中心独立分组）</li>
+                </ol>
+
+                <h4 id="help-feishu">飞书（群机器人）</h4>
+                <ol>
+                  <li>飞书群 → 设置 → 群机器人 → 添加自定义机器人，复制 <strong>Webhook 地址</strong></li>
+                  <li>若开启「签名校验」，复制<strong>签名密钥</strong></li>
+                  <li>设置 → 分发渠道 →「添加渠道」：类型选飞书，粘贴 Webhook 与密钥（可选）并保存</li>
+                </ol>
+
+                <h4 id="help-wecom">企业微信（群机器人）</h4>
+                <ol>
+                  <li>企业微信群 → 右上角 → 添加群机器人，复制 <strong>Webhook 地址</strong></li>
+                  <li>设置 → 分发渠道 →「添加渠道」：类型选企业微信，粘贴 Webhook 并保存</li>
+                </ol>
+
+                <h4 id="help-pushdeer">PushDeer（iOS / Android 推送）</h4>
+                <ol>
+                  <li>安装 <strong>PushDeer</strong> App 并登录，在 App 内取得专属 <strong>Key</strong></li>
+                  <li>设置 → 分发渠道 →「添加渠道」：类型选 PushDeer，填 Key（必填）与<strong>服务地址</strong>（默认 <code>https://api2.pushdeer.com</code>，自建服务时改）</li>
+                  <li>多个 Key 用英文逗号分隔可一次推给多台设备</li>
+                </ol>
+
+                <h4 id="help-webhook">通用 Webhook（自建服务 / 任意 HTTP 接收端）</h4>
+                <ol>
+                  <li>设置 → 分发渠道 →「添加渠道」：类型选<strong>通用 Webhook</strong>，填 <strong>Webhook URL</strong>（必填）</li>
+                  <li>可选填<strong>签名密钥</strong>：填了则请求带 <code>X-Bluebird-Signature-256: sha256=&lt;HMAC-SHA256(请求体)&gt;</code> 头，接收端用同一密钥可校验来源</li>
+                  <li>推送体为 JSON <code>{"title","body","source"}</code>；接收端返回 <strong>2xx</strong> 即视为成功</li>
+                </ol>
+              </section>
+
+              <section aria-labelledby="help-verify-h">
+                <h3 id="help-verify-h"><span class="step">4</span><span id="help-verify">验证</span></h3>
+                <p>添加完成后回到面板主页：</p>
+                <ul>
+                  <li>顶部<strong>KPI 与统计趋势图</strong>：按日查看推送量，可切换「按通知源 / 按分发渠道 / 按是否成功」，鼠标悬停查看每日明细</li>
+                  <li>下方<strong>推送记录</strong>：按来源 / 渠道 / 事件过滤，查看每条推送成功 / 失败状态，点击消息可展开完整内容</li>
+                  <li>发一条测试推送（GitHub Webhook 的 Redeliver，或通用来源的 curl），确认手机 / 群能收到</li>
+                </ul>
+              </section>
+
+              <section aria-labelledby="help-faq-h">
+                <h3 id="help-faq-h"><span class="step">?</span><span id="help-faq">常见问题</span></h3>
+                <div class="doc-card">
+                  <p><strong>收不到通知？</strong></p>
+                  <ul>
+                    <li>查看推送记录里该条状态是否为「失败」；检查对应渠道实例是否启用（开关）、来源的「通知渠道」是否勾选了该渠道</li>
+                    <li>GitHub 来源：确认 App 已安装且 Webhook URL / Secret 正确</li>
+                    <li>检查「事件类型」是否全不选了（全不选 = 不推送）；通用来源检查 <code>Authorization: Bearer &lt;Token&gt;</code> 是否匹配</li>
+                  </ul>
+                </div>
+                <div class="doc-card">
+                  <p><strong>删除渠道后来源仍引用？</strong></p>
+                  <p>来源的「通知渠道」勾选里不会出现已删除渠道，保存一次即可清理。</p>
+                </div>
+              </section>
+            </div>
+            <aside class="toc-rail" id="tocRail" aria-label="目录">
+              <div class="toc-rail-title">本页目录</div>
+              <div class="toc-links">
+                <a href="#help-setup">进入设置</a>
+                <a href="#help-source">添加通知源</a>
+                <a class="sub" href="#help-github-source">GitHub 信息源</a>
+                <a class="sub" href="#help-generic-source">通用信息源</a>
+                <a href="#help-channel">添加分发渠道</a>
+                <a class="sub" href="#help-bark">Bark</a>
+                <a class="sub" href="#help-feishu">飞书</a>
+                <a class="sub" href="#help-wecom">企业微信</a>
+                <a class="sub" href="#help-pushdeer">PushDeer</a>
+                <a class="sub" href="#help-webhook">通用 Webhook</a>
+                <a href="#help-verify">验证</a>
+                <a href="#help-faq">常见问题</a>
+              </div>
+            </aside>
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+</div>
+<div class="drawer-mask" id="drawerMask" aria-hidden="true"></div>
+
+<!-- 实例表单弹窗 -->
+<div class="overlay" id="form-overlay" role="presentation">
+  <div class="mask" onclick="closeForm()"></div>
+  <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="form-title" id="form-dialog">
+    <div class="dialog-head">
+      <h2 class="dialog-title" id="form-title">添加通知源</h2>
+      <button class="btn btn-ghost btn-icon btn-sm" type="button" onclick="closeForm()" aria-label="关闭" data-icon="x"></button>
+    </div>
+    <div class="dialog-body">
+      <div class="form-row gap-b"><label class="label" for="f-name">名称</label>
+        <input id="f-name" class="input" maxlength="32" placeholder="如 github / server-monitor（仅字母数字 -_.）" autocomplete="off">
+      </div>
+      <div class="form-row gap-b"><label class="label">类型</label>
+        <div class="dd block" id="dd-f-type">
+          <button type="button" class="dd-btn" aria-haspopup="listbox" aria-expanded="false" aria-label="实例类型"><span class="dd-label">选择类型</span><span class="dd-chev" data-icon="chevronDown" aria-hidden="true"></span></button>
+          <div class="dd-menu" role="listbox" aria-label="实例类型"></div>
+          <input type="hidden" id="f-type" value="">
+        </div>
+      </div>
+      <div id="f-fields"></div>
+    </div>
+    <div class="dialog-foot">
+      <button class="btn btn-secondary" type="button" onclick="closeForm()">取消</button>
+      <button class="btn btn-primary" type="button" id="form-save" onclick="saveForm()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 确认弹窗 -->
+<div class="overlay" id="confirm-overlay" role="presentation">
+  <div class="mask" onclick="closeConfirm(false)"></div>
+  <div class="dialog dialog-sm" role="alertdialog" aria-modal="true" aria-labelledby="confirm-title" aria-describedby="confirm-msg" id="confirm-dialog">
+    <div class="dialog-head">
+      <h2 class="dialog-title t-danger" id="confirm-title"></h2>
+      <button class="btn btn-ghost btn-icon btn-sm" type="button" onclick="closeConfirm(false)" aria-label="关闭" data-icon="x"></button>
+    </div>
+    <div class="dialog-body confirm-msg" id="confirm-msg"></div>
+    <div class="dialog-foot">
+      <button class="btn btn-secondary" type="button" id="confirm-cancel" onclick="closeConfirm(false)">取消</button>
+      <button class="btn btn-danger" type="button" id="confirm-ok" onclick="closeConfirm(true)">删除</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toasts" id="toasts" role="status" aria-live="polite"></div>
+
+<!-- 右下悬浮按钮组（主钮 Settings 展开：主题色 / 明暗 / 退出） -->
+<div class="fab-wrap" id="fab">
+  <div class="fab-panel" role="group" aria-label="快捷设置">
+    <button class="fab-btn fab-theme" id="fabTheme" type="button" aria-label="主题色" aria-haspopup="true" aria-expanded="false">
+      <span class="ic" data-icon="palette"></span>
+      <span class="fab-pop" role="menu" aria-label="主题色">
+        <span class="fp-label">主题色</span>
+        <span class="fab-swatches" id="theme-swatches"><!-- JS 注入 5 色块 --></span>
+      </span>
+    </button>
+    <button class="fab-btn fab-scheme" id="fabScheme" type="button" title="切换明暗" aria-label="切换明暗模式">
+      <svg class="ic-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+      <svg class="ic-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+    </button>
+    <button class="fab-btn fab-logout" id="fabLogout" type="button" title="退出登录" aria-label="退出登录">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>
+    </button>
+  </div>
+  <button class="fab-btn fab-main" id="fabMain" type="button" aria-label="快捷设置" aria-haspopup="true" aria-expanded="false">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+  </button>
+</div>
+<script>
+/* ============================================================
+   图标表（Lucide 线性纯 SVG：viewBox 24、stroke-width=2、currentColor）
+   装饰 aria-hidden；纯图标按钮补 aria-label。尺寸仅 16/20/24 + 空态 48。
+   ============================================================ */
+var I_PATHS = {
+  bird: '<path d="M16 7h.01"/><path d="M3.4 18H12a8 8 0 0 0 8-8V7a4 4 0 0 0-7.28-2.3L2 20"/><path d="m20 7 2 .5-2 .5"/><path d="M10 18v3"/><path d="M14 17.75V21"/><path d="M7 18a6 6 0 0 0 3.84-10.61"/>',
+  settings: '<path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/>',
+  helpCircle: '<circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/>',
+  x: '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
+  plus: '<path d="M5 12h14"/><path d="M12 5v14"/>',
+  search: '<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>',
+  trash2: '<path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/>',
+  pencil: '<path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/>',
+  eye: '<path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/>',
+  eyeOff: '<path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49"/><path d="M14.084 14.158a3 3 0 0 1-4.242-4.242"/><path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143"/><path d="m2 2 20 20"/>',
+  copy: '<rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>',
+  check: '<path d="M20 6 9 17l-5-5"/>',
+  circleCheck: '<circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/>',
+  circleX: '<circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/>',
+  alertTriangle: '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/>',
+  info: '<circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>',
+  inbox: '<polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>',
+  fileX: '<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="m14.5 12.5-5 5"/><path d="m9.5 12.5 5 5"/>',
+  chevronDown: '<path d="m6 9 6 6 6-6"/>',
+  chevronLeft: '<path d="m15 18-6-6 6-6"/>',
+  chevronRight: '<path d="m9 18 6-6-6-6"/>',
+  spinner: '<path d="M21 12a9 9 0 1 1-6.219-8.56"/>',
+  palette: '<circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/>',
+  menu: '<path d="M4 12h16"/><path d="M4 6h16"/><path d="M4 18h16"/>',
+  chevronsLeft: '<path d="m11 17-5-5 5-5"/><path d="m18 17-5-5 5-5"/>',
+  chevronsRight: '<path d="m6 17 5-5-5-5"/><path d="m13 17 5-5-5-5"/>',
+  layoutDashboard: '<rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/>',
+  scrollText: '<path d="M15 12h-5"/><path d="M15 8h-5"/><path d="M19 17V5a2 2 0 0 0-2-2H4"/><path d="M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3"/>',
+  radio: '<path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"/><path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5"/><circle cx="12" cy="12" r="2"/><path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5"/><path d="M19.1 4.9C23 8.8 23 15.2 19.1 19.1"/>',
+  send: '<path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"/><path d="m21.854 2.147-10.94 10.939"/>',
+  refreshCw: '<path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/>'
+};
+function svg(name, cls, w, h) {
+  w = w || 16; h = h || w;
+  return '<svg class="' + (cls || '') + '" width="' + w + '" height="' + h + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (I_PATHS[name] || '') + '</svg>';
+}
+/* 把静态占位 [data-icon] 换成图标 */
+function injectIcons() {
+  document.querySelectorAll('[data-icon]').forEach(function (el) {
+    var s = svg(el.getAttribute('data-icon'));
+    el.removeAttribute('data-icon');
+    el.innerHTML = s + el.innerHTML;
+  });
+}
+
+/* ============================================================ 常量与状态 ====== */
+var EV_LABEL = {watch: 'star', fork: 'fork', issues: 'issue', issue_comment: '评论',
+                pull_request: 'PR', workflow_run: 'CI'};
+var TYPE_LABEL = {github: 'GitHub', generic: '通用', bark: 'Bark', feishu: '飞书', wecom: '企业微信',
+                  pushdeer: 'PushDeer', webhook: '通用 Webhook'};
+/* 渠道类型展示顺序：表单类型选择、来源里的渠道分组、渠道筛选项共用一处 */
+var CHANNEL_TYPES = ['bark', 'feishu', 'wecom', 'pushdeer', 'webhook'];
+var THEMES = [
+  {id: 'emerald', label: '翠绿',   color: '#10B981'},
+  {id: 'indigo',  label: '靛蓝',   color: '#4F46E5'},
+  {id: 'rose',    label: '玫红',   color: '#F43F5E'},
+  {id: 'amber',   label: '琥珀',   color: '#F59E0B'},
+  {id: 'slate',   label: '石板',   color: '#64748B'}
+];
+var toggles = {};
+var instList = {sources: [], channels: []};
+var statGroup = 'source';
+var retentionDays = 30;
+var PAGE_SIZE = 100;
+var page = 1, totalPages = 1;
+var statColors = ['var(--chart-1)', 'var(--chart-2)', 'var(--chart-3)', 'var(--chart-4)', 'var(--chart-5)'];
+var formMode = '';
+var formOriginalName = '';
+var statCache = null;               /* 最近一次成功的统计数据，切回概览时直接重绘避免重取 */
+/* 会话级视图缓存：推送记录列表 {key, data} / 概览最近推送 / 设置启停数据。
+   key 由筛选条件+页号组成，条件变化即换 key 走新请求，同 key 命中直接渲染不闪骨架。 */
+var logCache = null;
+var recentCache = null;
+var togglesReady = false;           /* 已成功拉取过一次设置数据：切走再切回不重复请求 */
+var API_BASE = location.pathname.replace(/\/ui\/?$/, '/');
+
+/* ============================================================ 基础工具 ======== */
+function esc(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g,
+    function (c) { return {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]; });
+}
+function pad(n) { return String(n).padStart(2, '0'); }
+/* 时间统一 YYYY-MM-DD HH:mm / YYYY-MM-DD，按 bb_timezone 时区（Intl formatToParts，
+   默认 Asia/Shanghai；统计图日期轴由服务端按服务器时区输出，不在此转换） */
+var TZ_VALUES = ['Asia/Shanghai', 'UTC', 'Asia/Tokyo', 'Asia/Singapore',
+                 'Europe/London', 'America/New_York', 'America/Los_Angeles'];
+var curTZ = 'Asia/Shanghai';
+function initTZ() {
+  try {
+    var t = localStorage.getItem('bb_timezone');
+    if (TZ_VALUES.indexOf(t) >= 0) curTZ = t;
+  } catch (e) {}
+}
+function tzParts(ts) {
+  var d = new Date(ts * 1000);
+  var p = {}, out = {y: '', mo: '', d: '', h: '', mi: ''};
+  try {
+    var dtf = new Intl.DateTimeFormat('sv-SE', {timeZone: curTZ, year: 'numeric',
+      month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23'});
+    dtf.formatToParts(d).forEach(function (x) { if (x.type !== 'literal') p[x.type] = x.value; });
+    out.y = p.year || ''; out.mo = p.month || ''; out.d = p.day || '';
+    out.h = p.hour || ''; out.mi = p.minute || '';
+  } catch (e) { /* 回退本地时间，保证极端环境仍可读 */
+    out.y = String(d.getFullYear()); out.mo = pad(d.getMonth() + 1); out.d = pad(d.getDate());
+    out.h = pad(d.getHours()); out.mi = pad(d.getMinutes());
+  }
+  return out;
+}
+function fmtTs(ts) {
+  var p = tzParts(ts);
+  return p.y + '-' + p.mo + '-' + p.d + ' ' + p.h + ':' + p.mi;
+}
+function fmtDay(ts) {
+  var p = tzParts(ts);
+  return p.y + '-' + p.mo + '-' + p.d;
+}
+/* 所选时区“今天”自然日 0 点的 epoch 秒：本地日期函数关于真实时间是单调的
+   （DST 只回拨墙钟不回拨日期），在 ±2 天窗口二分最早 tz 日期 ≥ 今天的时刻即本地 0 点。 */
+function tzTodayStartSec() {
+  var nowMs = Date.now();
+  var p = tzParts(Math.floor(nowMs / 1000));
+  var want = p.y + '-' + p.mo + '-' + p.d;
+  var lo = Date.UTC(+p.y, +p.mo - 1, +p.d) - 2 * 86400000;
+  var hi = Date.UTC(+p.y, +p.mo - 1, +p.d) + 2 * 86400000;
+  function dayKey(ms) {
+    var q = tzParts(Math.floor(ms / 1000));
+    return q.y + '-' + q.mo + '-' + q.d;
+  }
+  while (lo < hi) {
+    var mid = Math.floor((lo + hi) / 2);
+    if (dayKey(mid) >= want) hi = mid; else lo = mid + 1;
+  }
+  return Math.floor(lo / 1000);
+}
+function applyTZ(t) {
+  if (TZ_VALUES.indexOf(t) < 0) t = 'Asia/Shanghai';
+  curTZ = t;
+  try { localStorage.setItem('bb_timezone', t); } catch (e) {}
+  /* 立即生效：当前视图的时间列/分组 key 按新时区重排 */
+  if (curView === 'logs') load();
+  else if (curView === 'overview') loadRecent();
+}
+function onTZChange() { applyTZ(document.getElementById('tz').value); }
+/* 友好错误：控件/区块加载失败禁裸显状态码与原始异常 */
+var ERR_NET = '网络连接失败，请检查后重试';
+var ERR_SVC = '服务暂时不可用，请稍后重试';
+function httpMsg(status, detail) {
+  if (status >= 500) return ERR_SVC;
+  if (status === 401) return '未授权，请重新登录';
+  if (status >= 400 && detail) return detail;
+  return ERR_SVC;
+}
+function friendlyErr(e) {
+  var s = String((e && e.message) || e || '').toLowerCase();
+  if (/failed to fetch|networkerror|load failed|fetch/i.test(s)) return ERR_NET;
+  return ERR_SVC;
+}
+
+/* ============================================================ 主题（双轴）=====
+   主题色 = html[data-theme]（emerald 默认）x 明暗 = html.dark class。
+   持久化 bb_theme / bb_scheme；head 首帧脚本已恢复，此处即时切换。 */
+function applyThemeAttr(t) { document.documentElement.setAttribute('data-theme', t); }
+function setTheme(t) {
+  if (['indigo', 'emerald', 'rose', 'amber', 'slate'].indexOf(t) < 0) t = 'emerald';
+  applyThemeAttr(t);
+  try { localStorage.setItem('bb_theme', t); } catch (e) {}
+  refreshSwatches();
+  if (document.getElementById('fab')) document.getElementById('fab').classList.remove('open');
+  closeThemePop();
+}
+function currentScheme() { return document.documentElement.classList.contains('dark') ? 'dark' : 'light'; }
+function toggleScheme() {
+  var dark = currentScheme() === 'light';
+  document.documentElement.classList.toggle('dark', dark);
+  try { localStorage.setItem('bb_scheme', dark ? 'dark' : 'light'); } catch (e) {}
+}
+function renderSwatches() {
+  var box = document.getElementById('theme-swatches');
+  if (!box) return;
+  var cur = document.documentElement.getAttribute('data-theme') || 'emerald';
+  box.innerHTML = THEMES.map(function (t) {
+    return '<button type="button" class="fab-swatch' + (t.id === cur ? ' active' : '') + '" style="background:' + t.color + '" ' +
+      'data-theme-id="' + t.id + '" aria-label="主题色：' + t.label + '" aria-pressed="' + (t.id === cur) + '" ' +
+      'title="' + t.label + '" onclick="setTheme(\'' + t.id + '\')"></button>';
+  }).join('');
+}
+function refreshSwatches() {
+  var box = document.getElementById('theme-swatches');
+  if (!box) return;
+  var cur = document.documentElement.getAttribute('data-theme') || 'emerald';
+  Array.prototype.forEach.call(box.querySelectorAll('.fab-swatch'), function (b) {
+    var on = b.getAttribute('data-theme-id') === cur;
+    b.classList.toggle('active', on);
+    b.setAttribute('aria-pressed', on ? 'true' : 'false');
+  });
+}
+function closeThemePop() {
+  var b = document.getElementById('fabTheme');
+  if (b) { b.classList.remove('open'); b.setAttribute('aria-expanded', 'false'); }
+}
+function toggleThemePop() {
+  var b = document.getElementById('fabTheme');
+  var open = b.classList.toggle('open');
+  b.setAttribute('aria-expanded', open ? 'true' : 'false');
+}
+
+/* ============================================================ 悬浮按钮组 ======
+   主钮 hover/focus 展开；移出 160ms 收 / 外点 / Esc 收；主钮图标旋转 45°。 */
+function fabClose() {
+  var fab = document.getElementById('fab');
+  if (!fab) return;
+  fab.classList.remove('open');
+  var main = document.getElementById('fabMain');
+  if (main) main.setAttribute('aria-expanded', 'false');
+  closeThemePop();
+}
+function fabOpen() {
+  var fab = document.getElementById('fab');
+  if (!fab) return;
+  fab.classList.add('open');
+  var main = document.getElementById('fabMain');
+  if (main) main.setAttribute('aria-expanded', 'true');
+}
+function bindFab() {
+  var fab = document.getElementById('fab');
+  if (!fab) return;
+  var timer = null;
+  function inArea(e) { return fab.contains(e.target); }
+  fab.addEventListener('mouseenter', function () { clearTimeout(timer); fabOpen(); });
+  fab.addEventListener('mouseleave', function () { clearTimeout(timer); timer = setTimeout(fabClose, 160); });
+  fab.addEventListener('focusin', function () { clearTimeout(timer); fabOpen(); });
+  fab.addEventListener('focusout', function (e) {
+    clearTimeout(timer);
+    if (!fab.contains(e.relatedTarget)) timer = setTimeout(fabClose, 200);
+  });
+  var main = document.getElementById('fabMain');
+  if (main) main.addEventListener('click', function (e) { e.stopPropagation();
+    fab.classList.contains('open') ? fabClose() : fabOpen(); });
+  var scheme = document.getElementById('fabScheme');
+  if (scheme) scheme.addEventListener('click', function (e) { e.stopPropagation(); toggleScheme(); });
+  var theme = document.getElementById('fabTheme');
+  if (theme) theme.addEventListener('click', function (e) { e.stopPropagation(); toggleThemePop(); });
+  var logout = document.getElementById('fabLogout');
+  if (logout) logout.addEventListener('click', function (e) { e.stopPropagation(); fabClose(); confirmLogout(); });
+  renderSwatches();
+}
+
+/* ============================================================ Toast（4 级）=== */
+var TOAST_ICONS = {success: 'circleCheck', error: 'circleX', warning: 'alertTriangle', info: 'info'};
+function showToast(msg, type, desc) {
+  type = type || 'info';
+  var map = {ok: 'success', success: 'success', err: 'error', error: 'error', warn: 'warning', warning: 'warning', info: 'info'};
+  type = map[type] || 'info';
+  var wrap = document.getElementById('toasts');
+  if (!wrap) return;
+  var el = document.createElement('div');
+  el.className = 'toast toast-' + type;
+  var close = type === 'error' || type === 'warning'
+    ? '<button type="button" class="toast-close" aria-label="关闭">' + svg('x', '', 14, 14) + '</button>'
+    : '';
+  el.innerHTML = svg(TOAST_ICONS[type], '', 18, 18) +
+    '<div class="toast-msg"><div class="toast-title">' + esc(msg) + '</div>' +
+    (desc ? '<div class="toast-desc">' + esc(desc) + '</div>' : '') + '</div>' + close;
+  var closeBtn = el.querySelector('.toast-close');
+  if (closeBtn) closeBtn.addEventListener('click', function () { dismiss(el); });
+  while (wrap.children.length >= 3) wrap.removeChild(wrap.firstChild);
+  wrap.appendChild(el);
+  if (type === 'success' || type === 'info') {
+    setTimeout(function () { dismiss(el); }, 3000);
+  }
+}
+function dismiss(el) {
+  if (!el || !el.parentNode) return;
+  el.classList.add('out');
+  setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 160);
+}
+
+/* ============================================================ 弹窗与确认 ======
+   唯一模板：头/体/底；遮罩点关 + Esc + X；焦点归还触发钮；dialog 三件套 aria。 */
+var lastFocusEl = null;
+function trapFocus(ev) {
+  var overlay = ev.target.closest ? ev.target.closest('.overlay.open') : null;
+  if (!overlay) return;
+  var dialog = overlay.querySelector('.dialog');
+  if (!dialog) return;
+  var focusables = dialog.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+  if (!focusables.length) return;
+  var first = focusables[0], last = focusables[focusables.length - 1];
+  if (ev.shiftKey && document.activeElement === first) { ev.preventDefault(); last.focus(); }
+  else if (!ev.shiftKey && document.activeElement === last) { ev.preventDefault(); first.focus(); }
+}
+function openOverlay(id) {
+  var ov = document.getElementById(id);
+  if (!ov || ov.classList.contains('open')) return;
+  lastFocusEl = document.activeElement;
+  ov.classList.add('open');
+  document.body.classList.add('modal-open');
+  var dlg = ov.querySelector('.dialog');
+  if (dlg) {
+    var auto = dlg.querySelector('[autofocus], input:not([type=hidden]), select, button:not([type=hidden])');
+    if (auto) auto.focus();
+  }
+}
+function closeOverlay(id) {
+  var ov = document.getElementById(id);
+  if (!ov || !ov.classList.contains('open')) return;
+  ov.classList.remove('open');
+  if (!document.querySelector('.overlay.open')) document.body.classList.remove('modal-open');
+  if (lastFocusEl && lastFocusEl.focus && lastFocusEl !== document.body) { lastFocusEl.focus(); }
+}
+/* 确认框：Promise；确认按钮文案为具体动作（删除/清空/退出…），禁「确定/OK」 */
+var confirmResolve = null;
+function askConfirm(title, okText) {
+  document.getElementById('confirm-title').innerHTML = svg('alertTriangle', '', 20, 20) + esc(title);
+  document.getElementById('confirm-ok').textContent = okText || '删除';
+  openOverlay('confirm-overlay');
+  return new Promise(function (resolve) { confirmResolve = resolve; });
+}
+function closeConfirm(ok) {
+  closeOverlay('confirm-overlay');
+  if (confirmResolve) { var r = confirmResolve; confirmResolve = null; r(!!ok); }
+}
+function openForm() { openOverlay('form-overlay'); }
+function closeForm() { closeOverlay('form-overlay'); }
+
+/* ============================================================ API 助手 ========
+   统一：401 → 登录页；网络异常抛友好文案；业务 ok 校验。 */
+async function apiGet(url) {
+  let r;
+  try { r = await fetch(API_BASE + url); }
+  catch (e) { throw new Error(ERR_NET); }
+  if (r.status === 401) { location.href = API_BASE + 'login'; throw new Error('redirect'); }
+  let d = null;
+  try { d = await r.json(); } catch (e) {}
+  if (!r.ok) { throw new Error(httpMsg(r.status, d && d.error)); }
+  return d;
+}
+async function apiPost(url, body) {
+  let r;
+  try {
+    r = await fetch(API_BASE + url, {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(body || {})
+    });
+  } catch (e) { throw new Error(ERR_NET); }
+  if (r.status === 401) { location.href = API_BASE + 'login'; throw new Error('redirect'); }
+  let d = null;
+  try { d = await r.json(); } catch (e) {}
+  if (!r.ok) { throw new Error(httpMsg(r.status, d && d.error)); }
+  return d;
+}
+
+/* ============================================================ 自绘下拉 Select =====
+   全站禁用原生下拉外观（§4.4）：触发器 surface-2 底 + 右侧 ChevronDown（展开 rotate-180
+   200ms）；面板 surface-0 rounded-lg shadow-md border；外点/ESC/选择后关闭；键盘可达
+   （Tab 聚焦按钮 → Enter/空格/上下键开合 → 上下键移动 → Enter 确认）。
+   每个下拉保留一只 hidden input 承值 → 既有 getElementById(x).value 读写语义与联动钩子不变。 */
+var DDS = {};
+function ddRender(r) {
+  const idx = r.options.findIndex(o => o[0] === r.cur);
+  let lbl = '';
+  if (idx >= 0) lbl = r.options[idx][1];
+  else if (r.options.length) lbl = r.options[0][1];
+  r.label.textContent = lbl;
+  r.menu.innerHTML = r.options.map((o, i) => {
+    const on = o[0] === r.cur;
+    return '<div class="dd-item' + (on ? ' sel' : '') + '" data-v="' + esc(o[0]) + '" data-i="' + i + '" ' +
+      'role="option" aria-selected="' + (on ? 'true' : 'false') + '">' +
+      '<span>' + esc(o[1]) + '</span>' + (on ? svg('check', 'dd-tick', 16, 16) : '') + '</div>';
+  }).join('');
+  r.active = idx >= 0 ? idx : 0;
+}
+function ddHighlight(r) {
+  Array.prototype.forEach.call(r.menu.querySelectorAll('.dd-item'), function (el, i) {
+    el.classList.toggle('active', i === r.active);
+  });
+}
+function ddCommit(r, v) {
+  if (!r.options.some(o => o[0] === v)) v = r.options.length ? r.options[0][0] : '';
+  r.cur = v; r.input.value = v;
+  ddRender(r);
+  ddSetOpen(r, false);
+  if (r.onChange) r.onChange();
+}
+function ddSetOpen(r, open) {
+  if (open) {
+    Object.keys(DDS).forEach(k => { const o = DDS[k]; if (o && o !== r && o.box.classList.contains('open')) ddSetOpen(o, false); });
+    const host = r.box.closest('.card') || r.box.closest('.dialog-body');
+    if (host) host.classList.add('dd-active');
+  } else {
+    const host = r.box.closest('.card') || r.box.closest('.dialog-body');
+    if (host) host.classList.remove('dd-active');
+  }
+  r.box.classList.toggle('open', !!open);
+  r.btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+}
+function ddCloseBox(box) {
+  Object.keys(DDS).forEach(k => { const o = DDS[k]; if (o && o.box === box && box.classList.contains('open')) ddSetOpen(o, false); });
+}
+function ddMove(r, dir) {
+  if (!r.options.length) return;
+  r.active = (r.active + dir + r.options.length) % r.options.length;
+  ddHighlight(r);
+}
+function ddSel(id, v) {
+  const r = DDS[id];
+  if (!r) return;
+  if (r.cur !== v || r.input.value !== v) { r.cur = v; r.input.value = v; ddRender(r); }
+}
+function ddOptions(id, opts) {
+  const r = DDS[id];
+  if (!r) return;
+  r.options = opts || [];
+  if (!r.options.some(o => o[0] === r.cur)) r.cur = r.options.length ? r.options[0][0] : '';
+  r.input.value = r.cur;
+  ddRender(r);
+}
+function ddInit(id, options, onChange) {
+  const box = document.getElementById('dd-' + id);
+  const input = document.getElementById(id);
+  if (!box || !input) return null;
+  const btn = box.querySelector('.dd-btn');
+  const menu = box.querySelector('.dd-menu');
+  const label = box.querySelector('.dd-label');
+  const r = {id: id, box: box, input: input, btn: btn, menu: menu, label: label,
+             options: options || [], cur: input.value || '', onChange: onChange || null, active: 0};
+  ddRender(r);
+  btn.addEventListener('click', function (e) {
+    e.stopPropagation();
+    ddSetOpen(r, !box.classList.contains('open'));
+  });
+  btn.addEventListener('keydown', function (e) {
+    const open = box.classList.contains('open');
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      if (!open) ddSetOpen(r, true);
+      ddMove(r, e.key === 'ArrowDown' ? 1 : -1);
+      return;
+    }
+    if (e.key === 'Home' || e.key === 'End') {
+      e.preventDefault();
+      if (!open) ddSetOpen(r, true);
+      r.active = e.key === 'Home' ? 0 : r.options.length - 1;
+      ddHighlight(r);
+      return;
+    }
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      if (!open) { ddSetOpen(r, true); ddHighlight(r); return; }
+      if (r.active >= 0 && r.active < r.options.length) ddCommit(r, r.options[r.active][0]);
+      return;
+    }
+    if (e.key === 'Escape') { e.preventDefault(); ddSetOpen(r, false); }
+  });
+  menu.addEventListener('click', function (e) {
+    const it = e.target.closest('.dd-item');
+    if (!it) return;
+    e.stopPropagation();
+    ddCommit(r, it.getAttribute('data-v'));
+  });
+  DDS[id] = r;
+  return r;
+}
+
+/* ============================================================ 推送记录列表 ==== */
+function logParams() {
+  const c = document.getElementById('channel').value, e = document.getElementById('event').value,
+        s = document.getElementById('source').value;
+  const days = document.getElementById('days').value;
+  const p = new URLSearchParams({page: page, page_size: PAGE_SIZE});
+  /* 「今天」= 所选时区自然日：只发 since 从本地 0 点起（服务端 days 缺省近 7 天，叠加不影响） */
+  if (days === 'today') p.set('since', tzTodayStartSec());
+  else p.set('days', days);
+  if (c) p.set('channel', c);
+  if (e) p.set('event_type', e);
+  if (s) p.set('source', s);
+  return p;
+}
+async function load() {
+  const p = logParams();
+  const key = p.toString();   /* 筛选(days/channel/event/source)+page 任一变化即新 key */
+  if (logCache && logCache.key === key) { render(logCache.data); return; }
+  const list = document.getElementById('list');
+  list.innerHTML = Array.from({length: 4}, () =>
+    '<div class="msg-item"><div class="sk-stack">' +
+      '<div class="skeleton sk-row sk-w40"></div>' +
+      '<div class="skeleton sk-row sk-w80"></div>' +
+      '<div class="skeleton sk-row sk-full"></div></div></div>').join('');
+  try {
+    const d = await apiGet('api/logs?' + p);
+    logCache = {key: key, data: d};
+    render(d);
+  } catch (err) {
+    if (err && err.message === 'redirect') return;
+    if (logCache && logCache.key === key) logCache = null; /* 失败清该 key 缓存，重试走新请求 */
+    renderListError(err);
+  }
+}
+function renderListError(err) {
+  const list = document.getElementById('list');
+  const msg = (err && err.message === ERR_NET) ? ERR_NET : ERR_SVC;
+  list.innerHTML =
+    '<div class="err-block" role="alert">' +
+      svg('alertTriangle', 'err-icon', 48, 48) +
+      '<div class="err-title">加载失败</div>' +
+      '<div class="err-sub">' + esc(msg) + '</div>' +
+      '<button type="button" class="btn btn-secondary btn-sm" onclick="load()">重试</button>' +
+    '</div>';
+  ['kpi-total', 'kpi-ok', 'kpi-err'].forEach(id => { document.getElementById(id).textContent = '–'; });
+}
+function render(data) {
+  const items = data.items || [];
+  const total = data.total ?? items.length;
+  const ok = data.ok_count ?? items.filter(i => i.status === 'ok').length;
+  document.getElementById('kpi-total').textContent = total;
+  document.getElementById('kpi-ok').textContent = ok;
+  document.getElementById('kpi-err').textContent = total - ok;
+  const list = document.getElementById('list');
+  if (!total) { renderEmpty(list); return; }
+  const mode = document.getElementById('group').value;
+  const groups = {};
+  items.forEach(it => {
+    const g = groupOf(it, mode);
+    (groups[g.k] = groups[g.k] || {label: g.label, items: []}).items.push(it);
+  });
+  const order = mode === 'day' ? 1 : 0;
+  const keys = Object.keys(groups).sort((a, b) => order ? (a < b ? 1 : -1) : 0);
+  list.innerHTML = keys.map(gk => {
+    const grp = groups[gk];
+    const collapsed = localStorage.getItem('nh-collapse-' + gk) === '1';
+    return '<div class="day"><h3 class="grp' + (collapsed ? ' collapsed' : '') + '" data-key="' + esc(gk) +
+      '" tabindex="0" role="button" aria-expanded="' + (!collapsed) + '" onclick="toggleGroup(this)" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();toggleGroup(this);}">' +
+      svg('chevronDown', 'grp-chev', 14, 14) +
+      '<span class="grp-label">' + esc(grp.label) + '</span>' +
+      '<span class="grp-count">' + grp.items.length + '</span></h3>' +
+      '<div class="grp-items">' +
+      grp.items.map(msgRow).join('') + '</div></div>';
+  }).join('');
+  updateMsgChevrons();
+  renderPager(data);
+}
+function renderEmpty(list) {
+  const c = document.getElementById('channel').value, e = document.getElementById('event').value,
+        s = document.getElementById('source').value, d = document.getElementById('days').value;
+  const filtered = !!(c || e || s || d !== '7');
+  list.innerHTML =
+    '<div class="empty">' + svg(filtered ? 'search' : 'inbox', '', 48, 48) +
+      '<div class="empty-title">' + (filtered ? '没有符合条件的推送记录' : '暂无推送记录') + '</div>' +
+      '<div class="empty-sub">' + (filtered ? '试试放宽筛选条件。' : '收到 Webhook 事件并成功分发后，会在这里留下审计记录。') + '</div>' +
+      (filtered ? '<button type="button" class="btn btn-secondary btn-sm" onclick="clearFilters()">清除筛选</button>' : '') +
+    '</div>';
+  renderPager({total: 0});
+}
+function clearFilters() {
+  ['channel', 'event', 'source'].forEach(id => ddSel(id, ''));
+  ddSel('days', '7');
+  filterChanged();
+}
+function msgRow(it) {
+  const ok = it.status === 'ok';
+  const evTxt = EV_LABEL[it.event_type] || it.event_type || '—';
+  const evRep = it.repo ? evTxt + ' · ' + it.repo : evTxt;
+  const body = it.body
+    ? '<div class="msg-body"><div class="msg-body-inner">' +
+      '<div class="msg-body-title">' + esc(it.title || '(无标题)') + '</div>' +
+      '<div class="msg-body-text">' + esc(it.body) + '</div></div></div>'
+    : '';
+  const chev = it.body ? svg('chevronDown', 'm-chev', 16, 16) : '';
+  return '<div class="msg-item">' +
+    '<button type="button" class="msg-row" aria-expanded="false" aria-label="展开完整内容" onclick="toggleItem(this)">' +
+      '<span class="time mcol m-time">' + fmtTs(it.ts) + '</span>' +
+      '<span class="mcol m-src" title="' + esc(it.source || '') + '">' + esc(it.source || '—') + '</span>' +
+      '<span class="mcol m-ch"><span class="badge badge-neutral">' + esc(it.channel || '—') + '</span></span>' +
+      '<span class="mcol m-ev" title="' + esc(evRep) + '">' + esc(evRep) + '</span>' +
+      '<span class="mcol m-st"><span class="badge ' + (ok ? 'badge-ok' : 'badge-danger') + '"><span class="dot" aria-hidden="true"></span>' + (ok ? '成功' : '失败') + '</span></span>' +
+      chev +
+    '</button>' + body +
+  '</div>';
+}
+function toggleItem(btn) {
+  const item = btn.closest('.msg-item');
+  const expanded = item.classList.toggle('expanded');
+  btn.setAttribute('aria-label', expanded ? '收起完整内容' : '展开完整内容');
+  btn.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+}
+function updateMsgChevrons() {
+  /* 新行式列表：展开钮默认显示（无正文时不渲染），无需测量 */
+}
+function groupOf(it, mode) {
+  if (mode === 'source') return {k: 'src:' + (it.source || ''), label: it.source || '未知'};
+  if (mode === 'channel') return {k: 'ch:' + (it.channel || ''), label: it.channel || '未知'};
+  return {k: 'day:' + fmtDay(it.ts), label: fmtDay(it.ts)};
+}
+function toggleGroup(h) {
+  const collapsed = h.classList.toggle('collapsed');
+  h.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+  try { localStorage.setItem('nh-collapse-' + h.dataset.key, collapsed ? '1' : '0'); } catch (e) {}
+}
+function renderPager(data) {
+  const el = document.getElementById('pager');
+  totalPages = Math.max(1, Math.ceil((data.total || 0) / PAGE_SIZE));
+  page = Math.min(Math.max(1, page), totalPages);
+  if (totalPages <= 1) { el.hidden = true; el.innerHTML = ''; return; }
+  el.hidden = false;
+  const from = (page - 1) * PAGE_SIZE + 1;
+  const to = Math.min(page * PAGE_SIZE, data.total || 0);
+  const nums = [];
+  if (totalPages <= 7) { for (let i = 1; i <= totalPages; i++) nums.push(i); }
+  else {
+    nums.push(1);
+    if (page > 3) nums.push('…');
+    for (let i = Math.max(2, page - 1); i <= Math.min(totalPages - 1, page + 1); i++) nums.push(i);
+    if (page < totalPages - 2) nums.push('…');
+    nums.push(totalPages);
+  }
+  const btn = p => '<button type="button" class="page-btn' + (p === page ? ' current' : '') + '" ' +
+    (p === page ? 'aria-current="page"' : 'onclick="goPage(' + p + ')"') + '>' + p + '</button>';
+  el.innerHTML =
+    '<div class="pager-info">显示 ' + from + '–' + to + ' / 共 ' + (data.total || 0) + ' 条</div>' +
+    '<div class="pager-nav">' +
+      '<button type="button" class="page-btn" ' + (page <= 1 ? 'disabled' : 'onclick="goPage(' + (page - 1) + ')"') + ' aria-label="上一页">' + svg('chevronLeft', '', 16, 16) + '</button>' +
+      nums.map(n => n === '…' ? '<span class="page-btn ellipsis" aria-hidden="true">…</span>' : btn(n)).join('') +
+      '<button type="button" class="page-btn" ' + (page >= totalPages ? 'disabled' : 'onclick="goPage(' + (page + 1) + ')"') + ' aria-label="下一页">' + svg('chevronRight', '', 16, 16) + '</button>' +
+    '</div>';
+}
+function goPage(p) {
+  p = Math.min(Math.max(1, p), totalPages);
+  if (p === page) return;
+  page = p;
+  load();
+}
+function filterChanged() { page = 1; load(); }
+function groupChanged() { page = 1; load(); }
+function onSourceChange() {
+  const v = document.getElementById('source').value;
+  const item = instList.sources.find(s => s.name === v);
+  const show = !item || item.type !== 'generic';
+  const box = document.getElementById('dd-event');
+  if (box) box.style.display = show ? '' : 'none';
+  if (!show) ddSel('event', '');
+  page = 1;
+  load();
+}
+
+/* ============================================================ 图表（趋势） ==== */
+async function loadStats() {
+  const body = document.getElementById('stat-body');
+  const range = document.getElementById('stat-range');
+  if (range) range.textContent = '近 ' + retentionDays + ' 天';
+  body.innerHTML = '<div class="skeleton sk-chart"></div>';
+  try {
+    const d = await apiGet('api/stats?days=' + retentionDays + '&group=' + statGroup);
+    renderStats(d);
+  } catch (err) {
+    if (err && err.message === 'redirect') return;
+    const msg = (err && err.message === ERR_NET) ? ERR_NET : ERR_SVC;
+    body.innerHTML =
+      '<div class="err-block" role="alert">' +
+        svg('alertTriangle', 'err-icon', 48, 48) +
+        '<div class="err-title">统计加载失败</div>' +
+        '<div class="err-sub">' + esc(msg) + '</div>' +
+        '<button type="button" class="btn btn-secondary btn-sm" onclick="loadStats()">重试</button>' +
+      '</div>';
+  }
+}
+function setStatGroup(g, btn) {
+  statGroup = g;
+  document.querySelectorAll('#stat-group .seg-btn').forEach(b => {
+    const on = b === btn;
+    b.classList.toggle('active', on);
+    b.setAttribute('aria-pressed', on ? 'true' : 'false');
+  });
+  loadStats();
+}
+function statColorOf(group, key, i) {
+  if (group === 'status') return key === 'ok' ? statColors[1] : statColors[3];
+  return statColors[i % statColors.length];
+}
+function statLabelOf(group, key) {
+  if (group === 'status') return key === 'ok' ? '成功' : (key === 'error' ? '失败' : key);
+  return key;
+}
+function renderStats(d) {
+  const el = document.getElementById('stat-body');
+  statCache = d; /* 缓存最近一次成功结果：切回概览 / resize 时直接重绘 */
+  const series = d.series || [];
+  const total = series.reduce((a, s) => a + s.values.reduce((x, v) => x + v, 0), 0);
+  if (!total) {
+    el.innerHTML =
+      '<div class="empty">' + svg('fileX', '', 48, 48) +
+        '<div class="empty-title">暂无统计数据</div>' +
+        '<div class="empty-sub">所选时间范围内还没有推送记录。</div></div>';
+    return;
+  }
+  const legend = series.map((s, i) =>
+    '<span class="lg"><span class="dot" style="background:' + statColorOf(d.group, s.key, i) + '"></span>' +
+    esc(statLabelOf(d.group, s.key)) + '</span>').join('');
+  el.innerHTML = '<div class="legend">' + legend + '</div>' + buildChart(d);
+  bindStatHover(d);
+}
+function buildChart(d) {
+  const labels = d.labels, series = d.series;
+  const n = labels.length;
+  const W = Math.max(320, (document.getElementById('stat-body').clientWidth || 900) - 40);
+  const H = 260, padL = 42, padR = 12, padT = 14, padB = 28;
+  const iw = W - padL - padR, ih = H - padT - padB;
+  const max = Math.max(1, ...series.map(s => Math.max(...s.values)));
+  const yMax = Math.max(4, Math.ceil(max / 4) * 4);
+  const x = i => padL + (n === 1 ? iw / 2 : i * iw / (n - 1));
+  const y = v => padT + ih - (v / yMax) * ih;
+  const axisColor = 'var(--fg-faint)', gridColor = 'var(--line)';
+  let s = '<svg width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="统计趋势图">';
+  for (let g = 0; g <= 4; g++) {
+    const gy = padT + ih * g / 4;
+    const val = yMax - yMax * g / 4;
+    s += '<line x1="' + padL + '" y1="' + gy + '" x2="' + (W - padR) + '" y2="' + gy + '" style="stroke:' + gridColor + '" stroke-width="1"/>';
+    s += '<text x="' + (padL - 8) + '" y="' + (gy + 4) + '" text-anchor="end" font-size="11" style="fill:' + axisColor + '">' + val + '</text>';
+  }
+  const labelStep = Math.max(1, Math.ceil(n / 7));
+  labels.forEach((lb, i) => {
+    if (i % labelStep !== 0 && i !== n - 1) return;
+    s += '<text x="' + x(i).toFixed(1) + '" y="' + (H - 9) + '" text-anchor="middle" font-size="11" style="fill:' + axisColor + '">' + esc(lb.slice(5)) + '</text>';
+  });
+  series.forEach((sr, i) => {
+    const color = statColorOf(d.group, sr.key, i);
+    const pts = sr.values.map((v, idx) => x(idx).toFixed(1) + ',' + y(v).toFixed(1)).join(' ');
+    s += '<polyline points="' + pts + '" fill="none" style="stroke:' + color + '" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" opacity="0.9"/>';
+    sr.values.forEach((v, idx) => {
+      if (v > 0) s += '<circle cx="' + x(idx).toFixed(1) + '" cy="' + y(v).toFixed(1) + '" r="3" style="fill:' + color + '"/>';
+    });
+  });
+  labels.forEach((lb, i) => {
+    const colW = Math.max(iw / n, 8);
+    s += '<rect class="hover-col" data-i="' + i + '" x="' + (x(i) - colW / 2).toFixed(1) +
+         '" y="' + padT + '" width="' + colW.toFixed(1) + '" height="' + ih + '" fill="transparent"/>';
+  });
+  return s + '</svg>';
+}
+function bindStatHover(d) {
+  const body = document.getElementById('stat-body');
+  let tip = document.getElementById('stat-tip');
+  if (!tip) {
+    tip = document.createElement('div');
+    tip.id = 'stat-tip';
+    tip.className = 'stat-tip';
+    body.appendChild(tip);
+  }
+  body.querySelectorAll('.hover-col').forEach(rect => {
+    rect.addEventListener('mousemove', function (e) {
+      const i = +rect.dataset.i;
+      const rows = d.series.map((sr, si) =>
+        '<div class="tip-row"><span class="dot" style="background:' + statColorOf(d.group, sr.key, si) + '"></span>' +
+        esc(statLabelOf(d.group, sr.key)) + '<span class="tip-val">' + sr.values[i] + '</span></div>').join('');
+      tip.innerHTML = '<div class="tip-date">' + esc(d.labels[i]) + '</div>' + rows;
+      tip.style.display = 'block';
+      const br = body.getBoundingClientRect();
+      const mx = e.clientX - br.left, my = e.clientY - br.top;
+      let left = mx + 12;
+      if (left + tip.offsetWidth > body.clientWidth) left = Math.max(4, mx - tip.offsetWidth - 12);
+      tip.style.left = left + 'px';
+      tip.style.top = Math.max(0, my - 18) + 'px';
+      rect.style.fill = 'rgba(148,163,184,.15)';
+    });
+    rect.addEventListener('mouseleave', function () {
+      tip.style.display = 'none';
+      rect.style.fill = 'transparent';
+    });
+  });
+}
+
+/* ============================================================ 设置：启停 ======= */
+var settingsLoadFailed = false;
+async function loadToggles(force) {
+  if (!force && togglesReady) return;   /* 已成功拉取过：切走再切回不重复请求；force=true 由各变更路径触发 */
+  try {
+    const d = await apiGet('api/settings');
+    settingsLoadFailed = false;
+    togglesReady = true;
+    toggles.source = d.sources || {};
+    toggles.channel = d.channels || {};
+    instList.sources = d.source_items || [];
+    instList.channels = d.channel_items || [];
+    renderFilterOptions();
+    const rd = document.getElementById('retention-days');
+    if (rd && d.retention) rd.value = d.retention.days;
+    if (d.retention) retentionDays = parseInt(d.retention.days, 10) || 30;
+    const selfEl = document.getElementById('selfNotify');
+    if (selfEl && d.notify) {
+      const on = d.notify.self !== false;
+      selfEl.checked = on;
+      selfEl.setAttribute('aria-checked', on ? 'true' : 'false');
+    }
+    renderInstances();
+  } catch (err) {
+    if (err && err.message === 'redirect') return;
+    settingsLoadFailed = true;
+    togglesReady = false;
+    if (curView === 'sources' || curView === 'channels' || curView === 'settings') {
+      showToast('设置数据加载失败', 'error', err.message || ERR_SVC);
+    }
+    renderInstances(); /* 失败态常驻（内联重试），不闪退 */
+  }
+}
+function renderFilterOptions() {
+  const srcOpts = [['', '全部 Hook 源']].concat(instList.sources.map(s => [s.name, s.name]));
+  const chOpts = [['', '全部渠道']].concat(instList.channels.map(c => [c.name, c.name]));
+  ddOptions('source', srcOpts);
+  ddOptions('channel', chOpts);
+}
+async function toggle(key, value, el) {
+  if (el) el.disabled = true;
+  try {
+    await apiPost('api/settings', {key: key, value: value});
+    const dot = key.indexOf('.');
+    const kind = key.slice(0, dot) === 'source' ? '通知源' : '渠道';
+    const name = key.slice(dot + 1);
+    showToast(value ? '已启用' : '已停用', 'success', kind + '「' + name + '」');
+    loadToggles(true);
+  } catch (err) {
+    if (err && err.message === 'redirect') return;
+    showToast('切换失败', 'error', err.message || '请稍后重试');
+  } finally {
+    if (el) el.disabled = false;
+  }
+}
+
+/* ============================================================ 设置：实例列表 ===== */
+function renderInstances() {
+  expandedUid = '';
+  if (settingsLoadFailed) {
+    const retry = '<div class="err-block err-inline" role="alert">' +
+      '<div class="err-title">设置数据加载失败</div>' +
+      '<div class="err-sub">' + ERR_SVC + '</div>' +
+      '<button type="button" class="btn btn-secondary btn-sm" onclick="loadToggles()">重试</button></div>';
+    document.getElementById('src-list').innerHTML = retry;
+    document.getElementById('ch-list').innerHTML = retry;
+    return;
+  }
+  const sq = (document.getElementById('src-search').value || '').trim().toLowerCase();
+  const st = document.getElementById('src-type-filter').value;
+  const ss = document.getElementById('src-state-filter').value;
+  const srcs = instList.sources.map((s, i) => ({s, i})).filter(x =>
+    (!sq || x.s.name.toLowerCase().includes(sq)) &&
+    (!st || x.s.type === st) &&
+    (ss === '' || String(toggles.source[x.s.name] !== false ? '1' : '0') === ss));
+  document.getElementById('src-list').innerHTML =
+    srcs.map(x => instRow('source', x.s, x.i)).join('') ||
+    emptySmall(instList.sources.length ? '没有匹配的通知源' : '还没有通知源', '点击右上角「添加通知源」创建第一个来源。');
+  const cq = (document.getElementById('ch-search').value || '').trim().toLowerCase();
+  const ct = document.getElementById('ch-type-filter').value;
+  const cs = document.getElementById('ch-state-filter').value;
+  const chs = instList.channels.map((c, i) => ({s: c, i})).filter(x =>
+    (!cq || x.s.name.toLowerCase().includes(cq)) &&
+    (!ct || x.s.type === ct) &&
+    (cs === '' || String(toggles.channel[x.s.name] !== false ? '1' : '0') === cs));
+  document.getElementById('ch-list').innerHTML =
+    chs.map(x => instRow('channel', x.s, x.i)).join('') ||
+    emptySmall(instList.channels.length ? '没有匹配的渠道' : '还没有分发渠道', '点击右上角「添加渠道」创建第一个渠道。');
+}
+function emptySmall(title, sub) {
+  return '<div class="empty">' + svg('inbox', '', 48, 48) +
+    '<div class="empty-title">' + esc(title) + '</div>' +
+    '<div class="empty-sub">' + esc(sub) + '</div></div>';
+}
+function instRow(kind, item, i) {
+  const prefix = kind === 'source' ? 'source' : 'channel';
+  const on = toggles[prefix][item.name] !== false;
+  const openFn = kind === 'source' ? 'openSourceForm' : 'openChannelForm';
+  const uid = (kind === 'source' ? 's' : 'c') + i;
+  const swName = (kind === 'source' ? '通知源' : '渠道') + '「' + item.name + '」';
+  const sw =
+    '<label class="switch" title="' + (on ? '停用' : '启用') + '">' +
+      '<input type="checkbox" role="switch" aria-checked="' + on + '" aria-label="' + esc(swName) + '"' +
+        (on ? ' checked' : '') + ' onchange="toggle(\'' + prefix + '.' + item.name.replace(/'/g, "\\'") +
+        '\', this.checked ? 1 : 0, this)">' +
+      '<span class="track"></span><span class="thumb"></span>' +
+    '</label>';
+  const ops =
+    '<button type="button" class="btn btn-ghost btn-icon btn-sm" title="编辑" aria-label="编辑 ' + esc(item.name) + '" onclick="' + openFn + '(' + i + ')">' + svg('pencil', '', 16, 16) + '</button>' +
+    '<button type="button" class="btn btn-ghost btn-icon btn-sm" title="删除" aria-label="删除 ' + esc(item.name) + '" onclick="removeInstance(\'' + kind + '\',' + i + ')">' + svg('trash2', '', 16, 16) + '</button>';
+  const state = '<span class="inst-state ' + (on ? 'on' : 'off') + '"><span class="dot" aria-hidden="true"></span>' + (on ? '启用' : '停用') + '</span>';
+  const detail = kind === 'source' ? instDetail(item, i) : chDetail(item, i);
+  return '<div class="inst">' +
+    '<div class="inst-main">' +
+      '<button type="button" class="inst-chev" aria-label="展开详情" aria-expanded="false" id="chev-' + uid + '" onclick="toggleInst(\'' + uid + '\')">' + svg('chevronRight', '', 16, 16) + '</button>' +
+      '<div class="inst-meta">' +
+        '<span class="inst-name">' + esc(item.name) + '</span>' +
+        '<span class="inst-type">' + esc(TYPE_LABEL[item.type] || item.type) + '</span>' + state +
+      '</div>' +
+      '<div class="inst-controls">' + sw + ops + '</div>' +
+    '</div>' +
+    '<div class="inst-detail" id="inst-detail-' + uid + '" hidden>' + detail + '</div>' +
+  '</div>';
+}
+function instDetail(item, i) {
+  const cfg = item.config || {};
+  const secret = item.type === 'generic' ? cfg.token : cfg.secret;
+  const nameJs = item.name.replace(/'/g, "\\'");
+  let rows = '<div class="detail-row"><span class="dl">Webhook 地址</span>' +
+    '<code class="dv">' + esc(API_BASE + 'hooks/' + (item.id || item.name)) + '</code>' +
+    '<button type="button" class="btn btn-ghost btn-icon btn-sm" aria-label="复制 Webhook 地址" onclick="copyHookUrl(' + i + ', this)">' + svg('copy', '', 16, 16) + '</button>' +
+    '</div>' +
+    '<div class="detail-row"><span class="dl"></span><span class="dv"><span class="set-hint">地址按来源 ID 生成，' +
+    '改名不受影响；旧的名字形式 <code>/hooks/' + esc(item.name) + '</code> 仍可用，但改名后会失效</span></span></div>';
+  rows += '<div class="detail-row"><span class="dl">' + (item.type === 'generic' ? 'Token' : 'Secret') + '</span>' +
+    '<span class="inst-token" id="tok-' + i + '">' + (secret ? esc(maskToken(secret)) : '(未设置)') + '</span>' +
+    (secret
+      ? '<button type="button" class="btn btn-ghost btn-icon btn-sm" aria-label="显示明文" data-show="0" onclick="toggleRowToken(\'' + nameJs + '\', ' + i + ', this)">' + svg('eye', '', 16, 16) + '</button>' +
+        '<button type="button" class="btn btn-ghost btn-icon btn-sm" aria-label="复制" onclick="copyToken(\'' + nameJs + '\', ' + i + ', this)">' + svg('copy', '', 16, 16) + '</button>'
+      : '') +
+    '<button type="button" class="btn btn-ghost btn-icon btn-sm" title="重新生成" aria-label="重新生成 ' + esc(item.name) + ' 的 ' + (item.type === 'generic' ? 'Token' : 'Secret') + '" onclick="regenSourceToken(\'' + nameJs + '\', ' + i + ')">' + svg('refreshCw', '', 16, 16) + '</button>' +
+    '</div>';
+  if (item.type === 'github') {
+    const evs = (cfg.events || []).map(e => EV_LABEL[e] || e);
+    rows += '<div class="detail-row"><span class="dl">事件类型</span><span class="dv">' +
+      (evs.length ? esc(evs.join('、')) : '全部') + '</span></div>';
+  }
+  const chs = cfg.channels || [];
+  rows += '<div class="detail-row"><span class="dl">通知渠道</span><span class="dv">' +
+    (chs.length ? esc(chs.join('、'))
+      : (Array.isArray(cfg.channels) ? '无（不推送）' : '全部已启用渠道')) + '</span></div>';
+  return rows;
+}
+function chDetail(item, i) {
+  const cfg = item.config || {};
+  let rows = '';
+  const addRow = (label, val) => {
+    rows += '<div class="detail-row"><span class="dl">' + label + '</span><span class="dv">' + val + '</span></div>';
+  };
+  const addSecret = (label, val, id) => {
+    rows += '<div class="detail-row"><span class="dl">' + label + '</span>' +
+      '<span class="inst-token" id="' + id + '">' + (val ? esc(maskToken(val)) : '(未设置)') + '</span>' +
+      (val
+        ? '<button type="button" class="btn btn-ghost btn-icon btn-sm" aria-label="显示明文" data-show="0" onclick="chToggleToken(' + i + ', this)">' + svg('eye', '', 16, 16) + '</button>' +
+          '<button type="button" class="btn btn-ghost btn-icon btn-sm" aria-label="复制" onclick="copyChToken(' + i + ', this)">' + svg('copy', '', 16, 16) + '</button>'
+        : '') + '</div>';
+  };
+  if (item.type === 'bark') {
+    addRow('服务地址', '<code class="dv">' + esc(cfg.url || 'https://api.day.app') + '</code>');
+    addSecret('Key', cfg.key, 'ctok-' + i);
+  } else if (item.type === 'feishu') {
+    addRow('Webhook 地址', '<code class="dv">' + esc(cfg.webhook || '(未设置)') + '</code>');
+    addSecret('签名密钥', cfg.secret, 'ctok-' + i);
+  } else if (item.type === 'wecom') {
+    addRow('Webhook 地址', '<code class="dv">' + esc(cfg.webhook || '(未设置)') + '</code>');
+  } else if (item.type === 'pushdeer') {
+    addRow('服务地址', '<code class="dv">' + esc(cfg.url || 'https://api2.pushdeer.com') + '</code>');
+    addSecret('Key', cfg.key, 'ctok-' + i);
+  } else if (item.type === 'webhook') {
+    addRow('Webhook URL', '<code class="dv">' + esc(cfg.url || '(未设置)') + '</code>');
+    addSecret('签名密钥', cfg.secret, 'ctok-' + i);
+  }
+  const refs = instList.sources.filter(s => ((s.config || {}).channels || []).includes(item.name)).map(s => s.name);
+  addRow('被来源引用', refs.length ? esc(refs.join('、')) : '无（未限定，默认推送至全部已启用渠道）');
+  addRow('测试', '<button type="button" class="btn btn-secondary btn-sm" onclick="testChannel(' + i + ', this)">' +
+    '发送测试推送</button><span class="set-hint">向该渠道发一条测试消息，验证配置是否可用（不写入推送记录）</span>');
+  return rows;
+}
+let expandedUid = '';
+function toggleInst(uid) {
+  if (expandedUid && expandedUid !== uid) {
+    const old = document.getElementById('inst-detail-' + expandedUid);
+    const oldChev = document.getElementById('chev-' + expandedUid);
+    if (old) { old.hidden = true; oldChev.classList.remove('open');
+      oldChev.setAttribute('aria-expanded', 'false'); oldChev.setAttribute('aria-label', '展开详情'); }
+  }
+  const el = document.getElementById('inst-detail-' + uid);
+  const chev = document.getElementById('chev-' + uid);
+  const open = el.hidden;
+  el.hidden = !open;
+  chev.classList.toggle('open', open);
+  chev.setAttribute('aria-expanded', open ? 'true' : 'false');
+  chev.setAttribute('aria-label', open ? '收起详情' : '展开详情');
+  expandedUid = open ? uid : '';
+}
+function maskToken(t) {
+  t = t || '';
+  return t.length <= 8 ? t : t.slice(0, 4) + '*'.repeat(19) + t.slice(-4);
+}
+function secretOfSource(name) {
+  const it = instList.sources.find(s => s.name === name);
+  return (it && it.config) ? (it.config.token || it.config.secret || '') : '';
+}
+function toggleRowToken(name, i, btn) {
+  const t = secretOfSource(name);
+  const el = document.getElementById('tok-' + i);
+  const show = btn.getAttribute('data-show') === '1';
+  btn.setAttribute('data-show', show ? '0' : '1');
+  el.textContent = show ? maskToken(t) : t;
+  btn.setAttribute('aria-label', show ? '显示明文' : '隐藏明文');
+  btn.innerHTML = show ? svg('eye', '', 16, 16) : svg('eyeOff', '', 16, 16);
+}
+function copyToken(name, i, btn) {
+  copyText(secretOfSource(name), btn);
+}
+function chSecretOf(i) {
+  const cfg = (instList.channels[i] && instList.channels[i].config) || {};
+  return cfg.key || cfg.secret || '';
+}
+function chToggleToken(i, btn) {
+  const t = chSecretOf(i);
+  const el = document.getElementById('ctok-' + i);
+  const show = btn.getAttribute('data-show') === '1';
+  btn.setAttribute('data-show', show ? '0' : '1');
+  el.textContent = show ? maskToken(t) : t;
+  btn.setAttribute('aria-label', show ? '显示明文' : '隐藏明文');
+  btn.innerHTML = show ? svg('eye', '', 16, 16) : svg('eyeOff', '', 16, 16);
+}
+function copyChToken(i, btn) { copyText(chSecretOf(i), btn); }
+function copyHookUrl(i, btn) {
+  const it = instList.sources[i];
+  if (!it) { showToast('没有可复制的内容', 'warning'); return; }
+  copyText(API_BASE + 'hooks/' + (it.id || it.name), btn);
+}
+async function testChannel(i, btn) {
+  const item = instList.channels[i];
+  if (!item) return;
+  const orig = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = svg('spinner', 'btn-spin', 16, 16) + '<span class="btn-txt">发送中</span>';
+  try {
+    const d = await apiPost('api/settings', {action: 'channel/test', name: item.name});
+    if (d.success) showToast('测试推送成功', 'success', '「' + item.name + '」通道可用（不写入推送记录）');
+    else showToast('测试推送失败', 'error', d.error || '请检查配置与服务端日志');
+  } catch (err) {
+    if (err && err.message === 'redirect') return;
+    showToast('测试推送失败', 'error', err.message || '请稍后重试');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = orig;
+  }
+}
+function copyText(t, btn) {
+  if (!t) { showToast('没有可复制的内容', 'warning'); return; }
+  const done = () => {
+    const orig = btn.innerHTML;
+    btn.innerHTML = svg('check', '', 16, 16);
+    btn.classList.add('copied');
+    setTimeout(() => { btn.innerHTML = orig; btn.classList.remove('copied'); }, 1200);
+  };
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(t).then(done).catch(() => { fallbackCopy(t); done(); });
+  } else { fallbackCopy(t); done(); }
+}
+function fallbackCopy(t) {
+  const ta = document.createElement('textarea');
+  ta.value = t; ta.style.position = 'fixed'; ta.style.opacity = '0';
+  document.body.appendChild(ta); ta.select();
+  try { document.execCommand('copy'); } catch (e) {}
+  document.body.removeChild(ta);
+}
+
+/* ============================================================ 设置：表单 ======= */
+function openSourceForm(i) { formMode = 'source'; initForm(i >= 0 ? instList.sources[i] : null, ['github', 'generic']); }
+function openChannelForm(i) { formMode = 'channel'; initForm(i >= 0 ? instList.channels[i] : null, CHANNEL_TYPES); }
+function initForm(item, types) {
+  document.getElementById('form-title').textContent =
+    (item ? '编辑' : '添加') + (formMode === 'source' ? '通知源' : '分发渠道');
+  formOriginalName = item ? item.name : '';
+  document.getElementById('f-name').value = item ? item.name : '';
+  ddOptions('f-type', types.map(t => [t, TYPE_LABEL[t] || t]));
+  ddSel('f-type', (item && item.type) || types[0]);
+  renderFormFields(item ? item.config || {} : {});
+  openForm();
+}
+function renderFormFields(cfg) {
+  cfg = cfg || {};
+  const t = document.getElementById('f-type').value;
+  let html = '';
+  if (formMode === 'source') {
+    if (t === 'github') {
+      html += chkRow('f-events', '事件类型（取消勾选的事件不推送；全不选 = 不推送）', EV_LABEL, cfg.events);
+    }
+    html += chkRowChannels(cfg.channels);
+    const secName = t === 'github' ? 'Secret' : 'Token';
+    html += '<div class="form-row"><span class="set-hint">' + secName + ' 由系统在保存时自动生成，保存后在列表详情中查看、复制或重新生成。</span></div>';
+  } else if (t === 'bark') {
+    html += fieldRow('f-key', 'Key（必填）', cfg.key, 'text', true);
+    html += fieldRow('f-url', 'Bark 服务地址', cfg.url || 'https://api.day.app', 'text');
+  } else if (t === 'feishu') {
+    html += fieldRow('f-webhook', 'Webhook 地址（必填）', cfg.webhook, 'text');
+    html += fieldRow('f-secret', '签名密钥（可选）', cfg.secret, 'text', true);
+  } else if (t === 'wecom') {
+    html += fieldRow('f-webhook', 'Webhook 地址（必填）', cfg.webhook, 'text');
+  } else if (t === 'pushdeer') {
+    html += fieldRow('f-key', 'Key（必填，多个用英文逗号分隔）', cfg.key, 'text', true);
+    html += fieldRow('f-url', 'PushDeer 服务地址', cfg.url || 'https://api2.pushdeer.com', 'text');
+  } else if (t === 'webhook') {
+    html += fieldRow('f-url', 'Webhook URL（必填）', cfg.url, 'text');
+    html += fieldRow('f-secret', '签名密钥（可选）', cfg.secret, 'text', true);
+  }
+  document.getElementById('f-fields').innerHTML = html;
+  updateChkCount();
+}
+function fieldRow(id, label, value, type, secret) {
+  const input = '<input id="' + id + '" class="input" type="' + (secret ? 'password' : type) + '" value="' + esc(String(value == null ? '' : value)) + '" autocomplete="off">';
+  const eye = secret ? '<button type="button" class="btn btn-ghost btn-icon btn-sm" aria-label="显示明文" onclick="toggleSecret(\'' + id + '\', this)">' + svg('eye', '', 16, 16) + '</button>' : '';
+  return '<div class="form-row gap-b"><label class="label" for="' + id + '">' + label + '</label>' +
+    (secret ? '<div class="secret-wrap">' + input + eye + '</div>' : input) + '</div>';
+}
+function chkRow(id, label, labels, selected) {
+  selected = selected || [];
+  const all = Object.keys(labels);
+  const picked = selected.length ? selected : all;
+  const opts = all.map(k =>
+    '<label class="chk"><input type="checkbox" value="' + esc(k) + '"' + (picked.includes(k) ? ' checked' : '') + '>' + esc(labels[k]) + '</label>').join('');
+  return '<div class="form-row gap-b"><span class="label">' + label + '</span>' +
+    '<div class="chk-group" id="' + id + '">' + (opts || '<span class="set-hint">暂无可用项</span>') + '</div></div>';
+}
+function chkVal(id) {
+  return Array.from(document.querySelectorAll('#' + id + ' input:checked')).map(i => i.value);
+}
+function chkRowChannels(selected) {
+  selected = selected || [];
+  const all = instList.channels.map(c => c.name);
+  const picked = selected.length ? selected : all;
+  const groups = {};
+  instList.channels.forEach(c => { (groups[c.type] = groups[c.type] || []).push(c); });
+  const order = CHANNEL_TYPES.filter(t => groups[t]);
+  let html = '<div class="form-row gap-b"><span class="label">分发渠道（取消勾选的不推送；全不选 = 不推送）</span>' +
+    '<div class="chk-tools">' +
+      '<button type="button" class="btn btn-secondary btn-sm" onclick="chkSetAll(true)">全选</button>' +
+      '<button type="button" class="btn btn-secondary btn-sm" onclick="chkSetAll(false)">清空</button>' +
+      '<span class="chk-count" id="f-ch-count"></span></div>';
+  if (!instList.channels.length) {
+    html += '<div class="chk-group"><span class="set-hint">暂无渠道，请先在设置中添加分发渠道。</span></div>';
+  } else {
+    html += '<div class="chk-group" id="f-channels" onchange="updateChkCount()">' +
+      order.map(t =>
+        '<span class="chk-group-title">' + esc(TYPE_LABEL[t] || t) + '</span>' +
+        groups[t].map(c =>
+          '<label class="chk"><input type="checkbox" value="' + esc(c.name) + '"' +
+          (picked.includes(c.name) ? ' checked' : '') + '>' + esc(c.name) + '</label>').join('')).join('') + '</div>';
+  }
+  return html + '</div>';
+}
+function chkSetAll(on) {
+  const box = document.getElementById('f-channels');
+  if (box) box.querySelectorAll('input[type=checkbox]').forEach(i => { i.checked = on; });
+  updateChkCount();
+}
+function updateChkCount() {
+  const box = document.getElementById('f-channels');
+  const el = document.getElementById('f-ch-count');
+  if (!el) return;
+  const n = box ? box.querySelectorAll('input[type=checkbox]:checked').length : 0;
+  el.textContent = '已选 ' + n + ' / ' + instList.channels.length;
+}
+function toggleSecret(id, btn) {
+  const input = document.getElementById(id);
+  const show = input.type === 'password';
+  input.type = show ? 'text' : 'password';
+  btn.setAttribute('aria-label', show ? '隐藏明文' : '显示明文');
+  btn.innerHTML = show ? svg('eyeOff', '', 16, 16) : svg('eye', '', 16, 16);
+}
+function regenSourceToken(name, i) {
+  const it = instList.sources.find(s => s.name === name);
+  if (!it) return;
+  const secName = it.type === 'github' ? 'Secret' : 'Token';
+  const effect = it.type === 'github'
+    ? '若 GitHub App 正在使用，需在仓库 Webhook 配置中同步更新。'
+    : '使用旧 Token 的调用方将停止推送。';
+  document.getElementById('confirm-msg').innerHTML =
+    '将重新生成通知源「<strong>' + esc(name) + '</strong>」的 ' + secName +
+    '，<strong>旧值立即失效</strong>。' + effect + '确认重新生成？';
+  askConfirm('重新生成 ' + secName, '重新生成').then(async ok => {
+    if (!ok) return;
+    try {
+      const d = await apiPost('api/settings', {action: 'source/regen', name: name});
+      showToast('已重新生成', 'success', d.item.name + ' 的 ' + secName + ' 已更新，请同步到调用方');
+      loadToggles(true);
+    } catch (err) {
+      if (err && err.message === 'redirect') return;
+      showToast('重新生成失败', 'error', err.message || '请稍后重试');
+    }
+  });
+}
+async function saveForm() {
+  const btn = document.getElementById('form-save');
+  const name = (document.getElementById('f-name').value || '').trim();
+  const type = document.getElementById('f-type').value;
+  if (!name) { showToast('请填写名称', 'warning'); document.getElementById('f-name').focus(); return; }
+  const cfg = {};
+  if (formMode === 'source') {
+    /* Token/Secret 不再由表单提供：服务端在保存时为空则自动生成、编辑保留原值 */
+    cfg.channels = chkVal('f-channels');
+    if (type === 'github') {
+      cfg.events = chkVal('f-events');
+    }
+  } else if (type === 'bark') {
+    cfg.key = val('f-key'); cfg.url = val('f-url') || 'https://api.day.app';
+  } else if (type === 'pushdeer') {
+    cfg.key = val('f-key'); cfg.url = val('f-url') || 'https://api2.pushdeer.com';
+  } else if (type === 'webhook') {
+    cfg.url = val('f-url'); cfg.secret = val('f-secret');
+  } else {
+    cfg.webhook = val('f-webhook');
+    if (type === 'feishu') cfg.secret = val('f-secret');
+  }
+  btn.disabled = true; btn.classList.add('loading');
+  btn.innerHTML = svg('spinner', 'btn-spin', 16, 16) + '<span class="btn-txt">保存</span>';
+  try {
+    const d = await apiPost('api/settings', {
+      action: formMode + '/save', item: {name, type, config: cfg}, original_name: formOriginalName
+    });
+    closeForm();
+    const kind = formMode === 'source' ? '通知源' : '渠道';
+    showToast('已保存', 'success', kind + '「' + (d.item && d.item.name || name) + '」');
+    loadToggles(true);
+  } catch (err) {
+    if (err && err.message === 'redirect') return;
+    showToast('保存失败', 'error', err.message || '请稍后重试');
+  } finally {
+    btn.disabled = false; btn.classList.remove('loading');
+    btn.innerHTML = '保存';
+  }
+}
+function val(id) {
+  const el = document.getElementById(id);
+  return el ? el.value.trim() : '';
+}
+
+/* ============================================================ 删除 / 清空 ====== */
+function removeInstance(kind, i) {
+  const item = instList[kind + 's'][i];
+  if (!item) return;
+  const label = kind === 'source' ? '通知源' : '渠道';
+  document.getElementById('confirm-msg').innerHTML =
+    '将删除' + label + '「<strong>' + esc(item.name) + '</strong>」及其全部配置，删除后不可恢复。';
+  askConfirm('删除' + label, '删除').then(async ok => {
+    if (!ok) return;
+    try {
+      await apiPost('api/settings', {action: kind + '/remove', name: item.name});
+      showToast('已删除', 'success', label + '「' + item.name + '」');
+      loadToggles(true);
+    } catch (err) {
+      if (err && err.message === 'redirect') return;
+      showToast('删除失败', 'error', err.message || '请稍后重试');
+    }
+  });
+}
+function clearHistory() {
+  document.getElementById('confirm-msg').innerHTML =
+    '将<strong>永久删除全部推送历史</strong>，删除后不可恢复。确认清空？';
+  askConfirm('清空推送记录', '清空').then(async ok => {
+    if (!ok) return;
+    try {
+      const d = await apiPost('api/settings', {action: 'logs/clear'});
+      showToast('已清空', 'success', '共删除 ' + (d.deleted || 0) + ' 条历史记录');
+      logCache = null; recentCache = null;   /* 历史已清空，列表/最近推送缓存一并失效 */
+      load(); loadStats(); loadRecent();
+    } catch (err) {
+      if (err && err.message === 'redirect') return;
+      showToast('清理失败', 'error', err.message || '请稍后重试');
+    }
+  });
+}
+function confirmLogout() {
+  document.getElementById('confirm-msg').innerHTML =
+    '确认退出登录？退出后将返回登录页。';
+  askConfirm('退出登录', '退出').then(async ok => {
+    if (!ok) return;
+    try {
+      await apiPost('logout');
+    } catch (e) { /* 无论后端是否可响应，都回登录页 */ }
+    location.href = API_BASE + 'login';
+  });
+}
+async function saveRetention() {
+  const el = document.getElementById('retention-days');
+  const v = parseInt(el.value, 10);
+  if (!v || v < 1 || v > 3650) { showToast('请输入 1–3650 之间的天数', 'warning'); return; }
+  try {
+    const d = await apiPost('api/settings', {key: 'retention.days', value: v});
+    el.value = d.value;
+    retentionDays = parseInt(d.value, 10) || v;
+    showToast('已保存数据保留天数', 'success', '保留 ' + d.value + ' 天');
+    loadStats();
+  } catch (err) {
+    if (err && err.message === 'redirect') return;
+    showToast('保存失败', 'error', err.message || '请稍后重试');
+  }
+}
+
+/* ============================================================ 版本 ============ */
+async function loadVersion() {
+  const el = document.getElementById('verBadge');
+  /* 服务端已注入版本（__BB_VERSION__ 占位已被替换）时无需再请求 */
+  if (el && el.textContent && el.textContent.indexOf('__BB_VERSION__') < 0) return;
+  try {
+    const j = await apiGet('api/version');
+    if (j && j.ok && j.version) {
+      /* j.version 已带 v 前缀（如 "v2.1.0"），只显示原文，缺 v 才补 */
+      const v = String(j.version);
+      el.textContent = /^v/i.test(v) ? v : 'v' + v;
+    }
+  } catch (e) { /* 忽略：版本徽标可缺省 */ }
+}
+
+/* ============================================================ 侧边栏：折叠与抽屉 ====
+   桌面（≥768px）：w-240 固定 / html.nav-sm 折叠 w-64 仅图标，localStorage(bb_sidebar) 持久化；
+   手机（<768px）：转抽屉（w-288 左滑 200ms + 遮罩 + ESC/X/遮罩关），汉堡唤出，折叠钮隐藏。 */
+function setSidebarCollapsed(collapsed) {
+  document.documentElement.classList.toggle('nav-sm', !!collapsed);
+  const b = document.getElementById('sideCollapse');
+  if (b) {
+    b.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+    const lbl = collapsed ? '展开侧边栏' : '折叠侧边栏';
+    b.setAttribute('aria-label', lbl);
+    b.title = lbl;
+  }
+  try { localStorage.setItem('bb_sidebar', collapsed ? '1' : '0'); } catch (e) {}
+}
+function openDrawer() {
+  document.body.classList.add('drawer-open');
+  const b = document.getElementById('navToggle');
+  if (b) b.setAttribute('aria-expanded', 'true');
+}
+function closeDrawer() {
+  document.body.classList.remove('drawer-open');
+  const b = document.getElementById('navToggle');
+  if (b) b.setAttribute('aria-expanded', 'false');
+}
+function toggleDrawer() {
+  if (document.body.classList.contains('drawer-open')) closeDrawer(); else openDrawer();
+}
+function bindSidebar() {
+  const sb = document.getElementById('sideCollapse');
+  if (sb) sb.addEventListener('click', function () {
+    setSidebarCollapsed(!document.documentElement.classList.contains('nav-sm'));
+  });
+  const tg = document.getElementById('navToggle');
+  if (tg) tg.addEventListener('click', toggleDrawer);
+  const mask = document.getElementById('drawerMask');
+  if (mask) mask.addEventListener('click', closeDrawer);
+  const xc = document.getElementById('drawerClose');
+  if (xc) xc.addEventListener('click', closeDrawer);
+  window.addEventListener('resize', function () {
+    if (window.innerWidth >= 768) closeDrawer();
+  });
+  /* 首帧已按 localStorage 折叠（head 脚本加 html.nav-sm），同步折叠钮 aria/标题 */
+  if (document.documentElement.classList.contains('nav-sm')) setSidebarCollapsed(true);
+}
+
+/* ============================================================ 视图路由（hash）=====
+   视图路由前缀 #/xxx；帮助视图正文的文档锚点（#help-xxx）不写 location.hash，
+   由 bindHelpToc() preventDefault + 手动滚动处理，二者互不干扰。 */
+var VIEW_LABELS = {overview: '概览', logs: '推送记录', sources: '通知源', channels: '分发渠道', settings: '系统设置', help: '帮助页面'};
+var curView = '';
+var helpSpy = null;   /* 帮助目录 scrollspy（bindHelpToc 赋值；进入帮助视图时手动触发一次） */
+function currentRoute() {
+  const m = /^#\/(overview|logs|sources|channels|settings|help)(?:\/|$)/.exec(location.hash || '');
+  return m ? m[1] : 'overview';
+}
+function activateView(name) {
+  if (!VIEW_LABELS[name]) name = 'overview';
+  curView = name;
+  Object.keys(VIEW_LABELS).forEach(function (v) {
+    const sec = document.getElementById('view-' + v);
+    if (sec) sec.hidden = v !== name;
+  });
+  document.querySelectorAll('#sidebar-nav .nav-item').forEach(function (a) {
+    const on = a.getAttribute('data-view') === name;
+    a.classList.toggle('active', on);
+    if (on) a.setAttribute('aria-current', 'page');
+    else a.removeAttribute('aria-current');
+  });
+  const crumb = document.getElementById('crumbTitle');
+  if (crumb) crumb.textContent = VIEW_LABELS[name];
+  if (name === 'help' && typeof helpSpy === 'function') helpSpy(); /* 回切帮助：按当前位置重算目录高亮 */
+  closeDrawer(); /* 抽屉模式下点击菜单项即收起 */
+}
+function routeView() {
+  const name = currentRoute();
+  activateView(name);
+  if (name === 'overview') {
+    loadRecent();
+    if (statCache) renderStats(statCache); else loadStats();
+  } else if (name === 'sources' || name === 'channels' || name === 'settings') {
+    loadToggles();
+  }
+}
+window.addEventListener('hashchange', routeView);
+
+/* ============================================================ 帮助视图：目录滚动 ====
+   .main 是滚动容器：点击 #view-help 内目录项（#help-xxx）时 preventDefault，避免浏览器
+   改写 location.hash（会与 #/view 路由冲突，触发 routeView 跳回概览），改在 .main 内
+   scrollIntoView 平滑滚动；.main 滚动时按各节位置给目录项加 active（scrollspy）。
+   全部限定在 #view-help 作用域内，不触碰其它视图；helpSpy 由 activateView 在切回帮助
+   时再触发一次，保证 scrollTop 保留场景下目录高亮正确。 */
+function bindHelpToc() {
+  const links = Array.prototype.slice.call(
+    document.querySelectorAll('#view-help .toc-links a[href^="#"]'));
+  links.forEach(function (a) {
+    a.addEventListener('click', function (e) {
+      const href = this.getAttribute('href') || '';
+      if (href.indexOf('#/') === 0) return; /* 路由链接（#/…）放行默认行为 */
+      const el = document.getElementById(href.slice(1));
+      if (!el) return;
+      e.preventDefault();
+      el.scrollIntoView({behavior: 'smooth', block: 'start'});
+    });
+  });
+  const main = document.getElementById('main');
+  const spyLinks = links.filter(function (a) {
+    const href = a.getAttribute('href') || '';
+    return href.indexOf('#/') !== 0 && !!document.getElementById(href.slice(1));
+  });
+  if (!main || !spyLinks.length) return;
+  const vh = document.getElementById('view-help');
+  helpSpy = function () {
+    if (vh && vh.hidden) return; /* 视图未显示时 rect 无效，跳过 */
+    const mTop = main.getBoundingClientRect().top;
+    let cur = null;
+    spyLinks.forEach(function (a) {
+      const el = document.getElementById((a.getAttribute('href') || '').slice(1));
+      if (el && el.getBoundingClientRect().top - mTop <= 140) cur = a;
+    });
+    spyLinks.forEach(function (a) {
+      const on = a === cur;
+      a.classList.toggle('active', on);
+      if (on) a.setAttribute('aria-current', 'true'); else a.removeAttribute('aria-current');
+    });
+  };
+  main.addEventListener('scroll', helpSpy);
+}
+
+/* ============================================================ 概览：最近推送摘要 ===
+   表格壳渲染（无分页 ≤8 行）；加载骨架行 / 空态 / 失败行沿用现有组件。 */
+/* 骨架行与数据行都带 c-* 列类：窄屏堆叠布局（grid-template-areas）依赖它们定位 */
+const RECENT_COLS = ['c-time', 'c-src', 'c-ch', 'c-ev', 'c-title', 'c-st'];
+function recentSkelHTML() {
+  return Array.from({length: 4}, () =>
+    '<tr>' + RECENT_COLS.map(c => '<td class="' + c + '"><div class="skeleton sk-row"></div></td>').join('') + '</tr>').join('');
+}
+function recentFullRow(inner) {
+  return '<tr><td colspan="6" class="t-full">' + inner + '</td></tr>';
+}
+function recentRowHTML(it) {
+  const ok = it.status === 'ok';
+  const ev = EV_LABEL[it.event_type] || it.event_type || '—';
+  const evRep = it.repo ? ev + ' · ' + it.repo : ev;
+  const st = ok ? ['ok', '成功'] : (it.status === 'error' ? ['danger', '失败'] : ['neutral', '其他']);
+  const src = it.source || '';
+  const ch = it.channel || '';
+  const title = it.title || '(无标题)';
+  return '<tr>' +
+    '<td class="time c-time">' + esc(fmtTs(it.ts)) + '</td>' +
+    '<td class="c-src"><span class="t-cell" title="' + esc(src) + '">' + esc(src || '—') + '</span></td>' +
+    '<td class="c-ch">' + (ch ? '<span class="b-cells"><span class="badge badge-neutral">' + esc(ch) + '</span></span>'
+                 : '<span class="t-cell">—</span>') + '</td>' +
+    '<td class="c-ev"><span class="t-cell" title="' + esc(evRep) + '">' + esc(evRep) + '</span></td>' +
+    '<td class="c-title"><span class="t-title" title="' + esc(title) + '">' + esc(title) + '</span></td>' +
+    '<td class="c-st"><span class="badge badge-' + st[0] + '"><span class="dot" aria-hidden="true"></span>' + st[1] + '</span></td>' +
+  '</tr>';
+}
+function recentRowsHTML(items) {
+  return items.map(recentRowHTML).join('');
+}
+function recentEmptyHTML() {
+  return recentFullRow(
+    '<div class="empty">' + svg('inbox', '', 48, 48) +
+    '<div class="empty-title">暂无推送记录</div>' +
+    '<div class="empty-sub">收到 Webhook 事件并成功分发后，会在这里留下最近记录。</div></div>');
+}
+function renderRecentItems(items) {
+  const body = document.getElementById('recent-body');
+  if (!body) return;
+  body.innerHTML = items.length ? recentRowsHTML(items) : recentEmptyHTML();
+}
+async function loadRecent() {
+  const body = document.getElementById('recent-body');
+  if (!body) return;
+  if (recentCache) { renderRecentItems(recentCache.items || []); return; } /* 切回概览不重取 */
+  body.innerHTML = recentSkelHTML();
+  try {
+    const d = await apiGet('api/logs?days=7&page=1&page_size=8');
+    recentCache = d;
+    renderRecentItems((d && d.items) || []);
+  } catch (err) {
+    if (err && err.message === 'redirect') return;
+    const msg = (err && err.message === ERR_NET) ? ERR_NET : ERR_SVC;
+    body.innerHTML = recentFullRow(
+      '<div class="err-block" role="alert">' +
+        svg('alertTriangle', 'err-icon', 48, 48) +
+        '<div class="err-title">加载失败</div>' +
+        '<div class="err-sub">' + esc(msg) + '</div>' +
+        '<button type="button" class="btn btn-secondary btn-sm" onclick="loadRecent()">重试</button>' +
+      '</div>');
+  }
+}
+
+/* ============================================================ 系统设置：通知本人操作 =====
+   notify.self 全局开关（原 GitHub 来源表单里的逐源勾选迁到此处）；走同一 api/settings。 */
+async function saveSelfNotify(on, el) {
+  if (el) el.disabled = true;
+  try {
+    await apiPost('api/settings', {key: 'notify.self', value: on ? 1 : 0});
+    showToast(on ? '已开启' : '已关闭', 'success', on ? '本人操作也会推送' : '本人操作默认忽略');
+    loadToggles(true);
+  } catch (err) {
+    if (err && err.message === 'redirect') return;
+    if (el) el.checked = !on;
+    showToast('保存失败', 'error', err.message || '请稍后重试');
+  } finally {
+    if (el) el.disabled = false;
+  }
+}
+
+/* ============================================================ 键盘与全局 ====== */
+document.addEventListener('keydown', function (e) {
+  if (e.key === 'Escape') {
+    const openDD = document.querySelector('.dd.open');
+    if (openDD) { ddCloseBox(openDD); return; }
+    if (document.getElementById('confirm-overlay').classList.contains('open')) { closeConfirm(false); return; }
+    if (document.getElementById('form-overlay').classList.contains('open')) { closeForm(); return; }
+    if (document.body.classList.contains('drawer-open')) { closeDrawer(); return; }
+    if (document.getElementById('fab') && document.getElementById('fab').classList.contains('open')) fabClose();
+    return;
+  }
+  if (e.key === 'Tab' && document.querySelector('.overlay.open')) trapFocus(e);
+});
+document.addEventListener('click', function (e) {
+  const openDD = document.querySelector('.dd.open');
+  if (openDD && !openDD.contains(e.target)) ddCloseBox(openDD);
+  const fab = document.getElementById('fab');
+  if (fab && fab.classList.contains('open') && !fab.contains(e.target)) fabClose();
+});
+
+/* ============================================================ 初始化 ========== */
+injectIcons();
+/* 自绘下拉：替换原生 select（options 与联动钩子对应原 onchange） */
+ddInit('source', [['', '全部 Hook 源']], onSourceChange);
+ddInit('event', [['', '全部事件'], ['watch', 'star'], ['fork', 'fork'], ['issues', 'issue'],
+                 ['issue_comment', '评论'], ['pull_request', 'PR'], ['workflow_run', 'CI']], filterChanged);
+ddInit('channel', [['', '全部渠道']], filterChanged);
+ddInit('days', [['today', '今天'], ['7', '近 7 天'], ['30', '近 30 天']], filterChanged);
+ddInit('group', [['day', '按日期'], ['source', '按来源'], ['channel', '按渠道']], groupChanged);
+ddInit('src-type-filter', [['', '全部类型'], ['github', 'GitHub'], ['generic', '通用']], renderInstances);
+ddInit('src-state-filter', [['', '全部状态'], ['1', '启用'], ['0', '停用']], renderInstances);
+ddInit('ch-type-filter', [['', '全部类型']].concat(CHANNEL_TYPES.map(t => [t, TYPE_LABEL[t]])), renderInstances);
+ddInit('ch-state-filter', [['', '全部状态'], ['1', '启用'], ['0', '停用']], renderInstances);
+ddInit('f-type', [], renderFormFields);
+initTZ();
+document.getElementById('tz').value = curTZ;
+ddInit('tz', TZ_VALUES.map(t => [t, t]), onTZChange);
+bindFab();
+bindSidebar();
+bindHelpToc();
+routeView(); /* 首帧按 hash 恢复（默认 #/overview；空 hash 或未知 → 概览） */
+if (curView !== 'sources' && curView !== 'channels' && curView !== 'settings') loadToggles();
+load();
+loadVersion();
+</script>
+</body>
+</html>

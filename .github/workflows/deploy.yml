@@ -1,0 +1,84 @@
+name: Deploy
+
+# 打 v* tag 或手动触发时，自动部署（docker compose）
+# 部署版本写入数据目录 version 文件，面板顶栏展示（/api/version）
+# 部署路径由 vars.NOTIFY_DEPLOY_PATH 指定（默认示例值见仓库 Variables 配置）
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+# 敏感信息均来自仓库 Secrets/Variables（不提交任何明文）
+#   Secrets:   NOTIFY_DEPLOY_KEY（部署 SSH 私钥）、NOTIFY_AUTH_PASS（面板密码）
+#   Variables: NOTIFY_DEPLOY_HOST / NOTIFY_DEPLOY_USER / NOTIFY_DEPLOY_PATH / NOTIFY_AUTH_USER
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 配置 SSH
+        env:
+          SSH_KEY: ${{ secrets.NOTIFY_DEPLOY_KEY }}
+          HOST: ${{ vars.NOTIFY_DEPLOY_HOST }}
+        run: |
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          echo "$SSH_KEY" | base64 -d > ~/.ssh/deploy_key && chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "$HOST" >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: 同步源码
+        env:
+          HOST: ${{ vars.NOTIFY_DEPLOY_HOST }}
+          USER: ${{ vars.NOTIFY_DEPLOY_USER }}
+          DEPLOY_PATH: ${{ vars.NOTIFY_DEPLOY_PATH }}
+        run: |
+          rsync -az --exclude '.env' -e 'ssh -i ~/.ssh/deploy_key' \
+            server.py ui.html login.html favicon.ico Dockerfile docker-compose.yml docs \
+            "$USER@$HOST:$DEPLOY_PATH/"
+
+      - name: 写入部署版本
+        if: github.ref_type == 'tag'
+        env:
+          HOST: ${{ vars.NOTIFY_DEPLOY_HOST }}
+          USER: ${{ vars.NOTIFY_DEPLOY_USER }}
+          VERSION: ${{ github.ref_name }}
+        run: |
+          ssh -i ~/.ssh/deploy_key "$USER@$HOST" \
+            "echo '$VERSION' > /opt/bluebird/version && chmod 644 /opt/bluebird/version"
+
+      - name: 注入面板认证
+        env:
+          HOST: ${{ vars.NOTIFY_DEPLOY_HOST }}
+          USER: ${{ vars.NOTIFY_DEPLOY_USER }}
+          DEPLOY_PATH: ${{ vars.NOTIFY_DEPLOY_PATH }}
+          NOTIFY_USER: ${{ vars.NOTIFY_AUTH_USER }}
+          NOTIFY_PASS: ${{ secrets.NOTIFY_AUTH_PASS }}
+        run: |
+          printf 'NOTIFY_AUTH_USER=%s\nNOTIFY_AUTH_PASS=%s\n' "$NOTIFY_USER" "$NOTIFY_PASS" > .env.deploy
+          scp -i ~/.ssh/deploy_key .env.deploy "$USER@$HOST:~/bb-auth.env"
+          rm -f .env.deploy
+          ssh -i ~/.ssh/deploy_key "$USER@$HOST" "
+            grep -v '^NOTIFY_AUTH_' $DEPLOY_PATH/.env > $DEPLOY_PATH/.env.tmp || true
+            cat ~/bb-auth.env >> $DEPLOY_PATH/.env.tmp
+            mv $DEPLOY_PATH/.env.tmp $DEPLOY_PATH/.env && chmod 600 $DEPLOY_PATH/.env
+            rm -f ~/bb-auth.env
+          "
+
+      - name: 重启容器
+        env:
+          HOST: ${{ vars.NOTIFY_DEPLOY_HOST }}
+          USER: ${{ vars.NOTIFY_DEPLOY_USER }}
+          DEPLOY_PATH: ${{ vars.NOTIFY_DEPLOY_PATH }}
+        run: |
+          ssh -i ~/.ssh/deploy_key "$USER@$HOST" \
+            "cd $DEPLOY_PATH && docker compose up -d --build"
+
+      - name: 验证
+        env:
+          HOST: ${{ vars.NOTIFY_DEPLOY_HOST }}
+          USER: ${{ vars.NOTIFY_DEPLOY_USER }}
+        run: |
+          # 8082 未对公网开放（nginx 反代），改为服务器本地验证（根路径部署）
+          ssh -i ~/.ssh/deploy_key "$USER@$HOST" \
+            "for i in 1 2 3 4 5; do curl -sf -o /dev/null http://127.0.0.1:8082/health && echo '服务 OK' && exit 0; sleep 3; done; echo '服务未就绪' && exit 1"

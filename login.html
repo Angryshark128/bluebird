@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="emerald">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>登录 · 青鸟 Bluebird</title>
+<link rel="icon" href="favicon.ico">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script>
+/* 首帧主题恢复（防闪烁）：主题色 bb_theme x 明暗 bb_scheme */
+(function () {
+  var t = localStorage.getItem('bb_theme');
+  var s = localStorage.getItem('bb_scheme');
+  var theme = ['indigo', 'emerald', 'rose', 'amber', 'slate'].indexOf(t) >= 0 ? t : 'emerald';
+  document.documentElement.setAttribute('data-theme', theme);
+  if (s === 'dark') document.documentElement.classList.add('dark');
+})();
+</script>
+<style>
+:root {
+  --brand-50:#eef2ff; --brand-100:#e0e7ff; --brand-500:#6366f1;
+  --brand-600:#4f46e5; --brand-700:#4338ca; --brand-900:#312e81;
+  --surface-0:#ffffff; --surface-1:#fafafa; --surface-2:#f4f4f5;
+  --surface-3:#e4e4e7; --surface-4:#d4d4d8;
+  --ink-900:#18181b; --ink-700:#3f3f46; --ink-500:#71717a; --ink-400:#a1a1aa;
+  --space-1:4px; --space-2:8px; --space-3:12px; --space-4:16px;
+  --space-6:24px; --space-8:32px; --space-12:48px; --space-16:64px;
+  --text-xs:12px; --text-sm:14px; --text-base:16px; --text-lg:18px; --text-xl:20px;
+  --radius-sm:4px; --radius-md:6px; --radius-lg:8px; --radius-xl:12px;
+  --shadow-sm:0 1px 2px rgba(16,24,40,.05);
+  --shadow-md:0 2px 10px rgba(16,24,40,.08);
+  --shadow-lg:0 10px 30px rgba(16,24,40,.14);
+  --danger-bg:#fff1f2; --danger-fg:#be123c; --danger-bar:#e11d48;
+  --bg-page:#f4f4f5; --bg-panel:#ffffff; --bg-panel2:#fafafa;
+  --bg-soft:#f4f4f5; --bg-field:#f4f4f5;
+  --fg-strong:#18181b; --fg-body:#3f3f46; --fg-sub:#71717a; --fg-faint:#a1a1aa;
+  --line:#e4e4e7; --line-strong:#d4d4d8; --row-hover:#fafafa;
+  --action-bg:var(--brand-600); --action-hover:var(--brand-700); --action-fg:#ffffff;
+  --link:var(--brand-600); --link-hover:var(--brand-700); --focus-ring:var(--brand-600);
+  --brand-soft:rgba(79,70,229,.10);
+  --font-sans:"Inter",-apple-system,BlinkMacSystemFont,"PingFang SC","Segoe UI","Microsoft YaHei",sans-serif;
+}
+html[data-theme="emerald"] {
+  --brand-50:#ecfdf5; --brand-100:#d1fae5; --brand-500:#10b981;
+  --brand-600:#059669; --brand-700:#047857; --brand-900:#064e3b;
+  --brand-soft:rgba(16,185,129,.12);
+}
+html[data-theme="rose"] {
+  --brand-50:#fff1f2; --brand-100:#ffe4e6; --brand-500:#f43f5e;
+  --brand-600:#e11d48; --brand-700:#be123c; --brand-900:#881337;
+  --brand-soft:rgba(244,63,94,.12);
+}
+html[data-theme="amber"] {
+  --brand-50:#fffbeb; --brand-100:#fef3c7; --brand-500:#f59e0b;
+  --brand-600:#d97706; --brand-700:#b45309; --brand-900:#78350f;
+  --brand-soft:rgba(245,158,11,.14);
+}
+html[data-theme="slate"] {
+  --brand-50:#f8fafc; --brand-100:#f1f5f9; --brand-500:#64748b;
+  --brand-600:#475569; --brand-700:#334155; --brand-900:#0f172a;
+  --brand-soft:rgba(100,116,139,.12);
+}
+html.dark {
+  --bg-page:#18181b; --bg-panel:#27272a; --bg-panel2:#2c2c30;
+  --bg-soft:#333337; --bg-field:#212124;
+  --fg-strong:#ffffff; --fg-body:#e4e4e7; --fg-sub:#d4d4d8; --fg-faint:#a1a1aa;
+  --line:#3f3f46; --line-strong:#52525b; --row-hover:#2c2c30;
+  --shadow-sm:0 1px 2px rgba(0,0,0,.35);
+  --shadow-md:0 2px 10px rgba(0,0,0,.45);
+  --shadow-lg:0 12px 32px rgba(0,0,0,.55);
+  --action-bg:var(--brand-500); --action-hover:var(--brand-600);
+  --link:var(--brand-500); --link-hover:var(--brand-600); --focus-ring:var(--brand-500);
+  --brand-soft:rgba(255,255,255,.08);
+  --danger-bg:#881337; --danger-fg:#fda4af; --danger-bar:#fb7185;
+}
+* { box-sizing:border-box; margin:0; padding:0; }
+html, body { height:100%; }
+body {
+  font-family:var(--font-sans); font-size:var(--text-sm); line-height:1.55;
+  color:var(--fg-body); background:var(--bg-page);
+  -webkit-font-smoothing:antialiased;
+  transition:background-color .2s ease, color .2s ease;
+  min-height:100vh;
+}
+button, input { font:inherit; color:inherit; }
+button { cursor:pointer; }
+:focus-visible { outline:2px solid var(--focus-ring); outline-offset:2px; }
+.sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+.mono { font-family:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace; }
+.login-wrap {
+  min-height:100vh; display:flex; align-items:center; justify-content:center;
+  padding:var(--space-4); position:relative;
+}
+.login-card {
+  position:relative; width:100%; max-width:400px;
+  background:var(--bg-panel); border:1px solid var(--line);
+  border-radius:var(--radius-xl); box-shadow:var(--shadow-lg);
+  padding:var(--space-8) var(--space-6) var(--space-6);
+  transition:background-color .2s ease, border-color .2s ease;
+}
+.card-theme-btn {
+  position:absolute; top:var(--space-3); right:var(--space-3); z-index:5;
+  width:36px; height:36px; border-radius:50%;
+  display:inline-flex; align-items:center; justify-content:center;
+  background:none; border:1px solid transparent; color:var(--fg-sub);
+  transition:background-color .15s ease, color .15s ease;
+}
+.card-theme-btn:hover { background:var(--row-hover); color:var(--fg-strong); }
+.card-theme-btn svg { width:18px; height:18px; display:none; }
+html:not(.dark) .card-theme-btn svg.ic-moon { display:block; }
+html.dark .card-theme-btn svg.ic-sun { display:block; }
+.login-brand { display:flex; flex-direction:column; align-items:center; gap:var(--space-2); margin:var(--space-2) 0 var(--space-4); }
+.login-mark {
+  width:56px; height:56px; border-radius:var(--radius-xl);
+  display:inline-flex; align-items:center; justify-content:center;
+  background:var(--brand-50); color:var(--brand-700);
+}
+.login-mark svg { width:28px; height:28px; }
+.login-title { font-size:var(--text-xl); font-weight:700; color:var(--fg-strong); }
+.login-sub { font-size:var(--text-sm); color:var(--fg-sub); text-align:center; }
+.login-form { display:flex; flex-direction:column; gap:var(--space-4); margin-top:var(--space-6); }
+.label { display:block; font-size:var(--text-sm); font-weight:500; color:var(--fg-strong); margin-bottom:var(--space-1); }
+.input {
+  width:100%; padding:var(--space-2) var(--space-3); min-height:42px;
+  background:var(--bg-field); border:1px solid transparent; border-radius:var(--radius-lg);
+  font-size:var(--text-sm); color:var(--fg-strong);
+  transition:background-color .15s ease, border-color .15s ease;
+}
+.input::placeholder { color:var(--fg-faint); }
+.input:focus { outline:none; background:var(--bg-panel); border-color:var(--brand-500); box-shadow:0 0 0 3px var(--brand-soft); }
+.input.has-err { border-color:var(--danger-bar); }
+.login-err {
+  display:none; align-items:flex-start; gap:var(--space-2);
+  min-height:0; padding:var(--space-2) var(--space-3);
+  background:var(--danger-bg); color:var(--danger-fg);
+  border-radius:var(--radius-lg); font-size:var(--text-sm);
+  margin-top:var(--space-2);
+}
+.login-err.show { display:flex; }
+.login-err svg { width:16px; height:16px; flex-shrink:0; margin-top:2px; }
+.btn {
+  display:inline-flex; align-items:center; justify-content:center; gap:var(--space-2);
+  padding:var(--space-2) var(--space-4); min-height:44px;
+  border:1px solid transparent; border-radius:var(--radius-lg);
+  font-size:var(--text-sm); font-weight:600; line-height:1;
+  transition:background-color .15s ease, border-color .15s ease, opacity .15s ease;
+}
+.btn svg { width:16px; height:16px; }
+.btn:active { transform:scale(.98); }
+.btn:disabled { opacity:.6; cursor:not-allowed; }
+.btn-primary { width:100%; background:var(--action-bg); color:var(--action-fg); border-color:var(--action-bg); }
+.btn-primary:hover { background:var(--action-hover); border-color:var(--action-hover); }
+.btn .btn-spin { display:none; }
+.btn.loading .btn-spin { display:inline-flex; animation:spin 1s linear infinite; }
+.btn.loading .btn-txt { opacity:.7; }
+@keyframes spin { to { transform:rotate(360deg); } }
+.login-foot { margin-top:var(--space-6); text-align:center; font-size:var(--text-xs); color:var(--fg-faint); }
+.login-foot code { font-family:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace; font-size:11px; background:var(--bg-soft); padding:1px var(--space-2); border-radius:var(--radius-sm); }
+.fab-wrap {
+  position:fixed; right:24px; bottom:24px; z-index:930;
+  display:flex; flex-direction:column; align-items:flex-end;
+}
+.fab-btn {
+  width:44px; height:44px; border-radius:50%; border:1px solid var(--line);
+  background:var(--bg-panel); color:var(--fg-sub);
+  display:inline-flex; align-items:center; justify-content:center; cursor:pointer;
+  box-shadow:var(--shadow-md); position:relative;
+  transition:transform .15s ease, box-shadow .15s ease, background-color .15s ease, color .15s ease;
+}
+.fab-btn svg { width:19px; height:19px; }
+.fab-btn:hover { transform:translateY(-1px); box-shadow:var(--shadow-lg); }
+.fab-btn:active { transform:scale(.95); }
+.fab-btn:focus-visible { outline:2px solid var(--focus-ring); outline-offset:2px; }
+.fab-main { width:48px; height:48px; background:var(--action-bg); border-color:var(--action-bg); color:var(--action-fg); box-shadow:var(--shadow-lg); }
+.fab-main:hover { background:var(--action-hover); color:var(--action-fg); }
+.fab-main svg { transition:transform .2s ease; }
+.fab-wrap.open .fab-main svg { transform:rotate(45deg); }
+.fab-panel {
+  display:flex; flex-direction:column; align-items:flex-end; gap:var(--space-2);
+  margin-bottom:var(--space-3);
+  opacity:0; visibility:hidden; transform:translateY(8px) scale(.92);
+  transform-origin:bottom right;
+  transition:opacity .18s ease, transform .18s ease, visibility 0s linear .18s;
+}
+.fab-wrap.open .fab-panel { opacity:1; visibility:visible; transform:translateY(0) scale(1); transition:opacity .18s ease, transform .18s ease; }
+.fab-scheme svg { display:none; }
+html:not(.dark) .fab-scheme svg.ic-moon { display:block; }
+html.dark .fab-scheme svg.ic-sun { display:block; }
+.fab-pop {
+  position:absolute; right:calc(100% + 12px); top:50%; transform:translateY(-50%);
+  display:flex; flex-direction:column; gap:var(--space-2);
+  background:var(--bg-panel); border:1px solid var(--line); border-radius:var(--radius-xl);
+  box-shadow:var(--shadow-lg); padding:var(--space-3);
+  opacity:0; visibility:hidden; pointer-events:none;
+  transition:opacity .18s ease, visibility 0s linear .18s;
+}
+.fab-theme.open .fab-pop { opacity:1; visibility:visible; pointer-events:auto; transition:opacity .18s ease; }
+.fab-pop .fp-label { font-size:11px; font-weight:600; letter-spacing:.03em; color:var(--fg-faint); }
+.fab-swatches { display:flex; flex-direction:row; gap:var(--space-2); }
+.fab-swatch {
+  width:28px; height:28px; border-radius:50%; cursor:pointer; padding:0;
+  border:2px solid transparent; transition:transform .12s ease;
+}
+.fab-swatch:hover { transform:scale(1.12); }
+.fab-swatch.active { box-shadow:0 0 0 2px var(--bg-panel), 0 0 0 4px var(--fg-strong); }
+.fab-swatch:focus-visible { outline:none; box-shadow:0 0 0 2px var(--bg-panel), 0 0 0 4px var(--focus-ring); }
+</style>
+</head>
+<body>
+<div class="login-wrap">
+  <div class="login-card" role="main" aria-label="登录 青鸟 Bluebird">
+    <button type="button" class="card-theme-btn" id="themeBtn" title="切换明暗" aria-label="切换明暗模式">
+      <svg class="ic-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+      <svg class="ic-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+    </button>
+    <div class="login-brand">
+      <span class="login-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 7h.01"/><path d="M3.4 18H12a8 8 0 0 0 8-8V7a4 4 0 0 0-7.28-2.3L2 20"/><path d="m20 7 2 .5-2 .5"/><path d="M10 18v3"/><path d="M14 17.75V21"/><path d="M7 18a6 6 0 0 0 3.84-10.61"/></svg>
+      </span>
+      <h1 class="login-title">青鸟 Bluebird</h1>
+      <p class="login-sub">Webhook 推送审计面板 · 记录每次通知去向</p>
+    </div>
+    <form class="login-form" id="loginForm" method="post" novalidate>
+      <div>
+        <label class="label" for="username">用户名</label>
+        <input class="input" type="text" id="username" name="username" autocomplete="username" placeholder="用户名" required>
+      </div>
+      <div>
+        <label class="label" for="password">密码</label>
+        <input class="input" type="password" id="password" name="password" autocomplete="current-password" placeholder="密码" required>
+      </div>
+      <div class="login-err" id="err" role="alert" aria-live="polite">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>
+        <span id="err-text">用户名或密码错误</span>
+      </div>
+      <button class="btn btn-primary" type="submit" id="btn">
+        <svg class="btn-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+        <span class="btn-txt">登 录</span>
+      </button>
+    </form>
+    <p class="login-foot">Webhook → <span class="mono">Bark / 飞书 / 企业微信 / PushDeer / Webhook</span> 多渠道推送</p>
+  </div>
+</div>
+
+<!-- 右下悬浮按钮组（登录页简化版：主题色 + 明暗） -->
+<div class="fab-wrap" id="fab">
+  <div class="fab-panel" role="group" aria-label="快捷设置">
+    <button class="fab-btn fab-theme" id="fabTheme" type="button" aria-label="主题色" aria-haspopup="true" aria-expanded="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>
+      <span class="fab-pop" role="menu" aria-label="主题色">
+        <span class="fp-label">主题色</span>
+        <span class="fab-swatches" id="theme-swatches"><!-- JS 注入 5 色块 --></span>
+      </span>
+    </button>
+    <button class="fab-btn fab-scheme" id="fabScheme" type="button" title="切换明暗" aria-label="切换明暗模式">
+      <svg class="ic-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+      <svg class="ic-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+    </button>
+  </div>
+  <button class="fab-btn fab-main" id="fabMain" type="button" aria-label="快捷设置" aria-haspopup="true" aria-expanded="false">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+  </button>
+</div>
+
+<script>
+/* ============================================================ 主题（与主面板同键） */
+var THEMES = [
+  {id: 'emerald', label: '翠绿', color: '#10B981'},
+  {id: 'indigo',  label: '靛蓝', color: '#4F46E5'},
+  {id: 'rose',    label: '玫红', color: '#F43F5E'},
+  {id: 'amber',   label: '琥珀', color: '#F59E0B'},
+  {id: 'slate',   label: '石板', color: '#64748B'}
+];
+function setTheme(t) {
+  if (['indigo', 'emerald', 'rose', 'amber', 'slate'].indexOf(t) < 0) t = 'emerald';
+  document.documentElement.setAttribute('data-theme', t);
+  try { localStorage.setItem('bb_theme', t); } catch (e) {}
+  refreshSwatches();
+  fabClose();
+  closeThemePop();
+}
+function toggleScheme() {
+  var dark = !document.documentElement.classList.contains('dark');
+  document.documentElement.classList.toggle('dark', dark);
+  try { localStorage.setItem('bb_scheme', dark ? 'dark' : 'light'); } catch (e) {}
+}
+function renderSwatches() {
+  var box = document.getElementById('theme-swatches');
+  if (!box) return;
+  var cur = document.documentElement.getAttribute('data-theme') || 'emerald';
+  box.innerHTML = THEMES.map(function (t) {
+    return '<button type="button" class="fab-swatch' + (t.id === cur ? ' active' : '') + '" style="background:' + t.color + '" ' +
+      'data-theme-id="' + t.id + '" aria-label="主题色：' + t.label + '" aria-pressed="' + (t.id === cur) + '" ' +
+      'title="' + t.label + '" onclick="setTheme(\'' + t.id + '\')"></button>';
+  }).join('');
+}
+function refreshSwatches() {
+  var box = document.getElementById('theme-swatches');
+  if (!box) return;
+  var cur = document.documentElement.getAttribute('data-theme') || 'emerald';
+  Array.prototype.forEach.call(box.querySelectorAll('.fab-swatch'), function (b) {
+    var on = b.getAttribute('data-theme-id') === cur;
+    b.classList.toggle('active', on);
+    b.setAttribute('aria-pressed', on ? 'true' : 'false');
+  });
+}
+function closeThemePop() {
+  var b = document.getElementById('fabTheme');
+  if (b) { b.classList.remove('open'); b.setAttribute('aria-expanded', 'false'); }
+}
+function toggleThemePop() {
+  var b = document.getElementById('fabTheme');
+  var open = b.classList.toggle('open');
+  b.setAttribute('aria-expanded', open ? 'true' : 'false');
+}
+function fabClose() {
+  var fab = document.getElementById('fab');
+  if (!fab) return;
+  fab.classList.remove('open');
+  var main = document.getElementById('fabMain');
+  if (main) main.setAttribute('aria-expanded', 'false');
+  closeThemePop();
+}
+function fabOpen() {
+  var fab = document.getElementById('fab');
+  if (!fab) return;
+  fab.classList.add('open');
+  var main = document.getElementById('fabMain');
+  if (main) main.setAttribute('aria-expanded', 'true');
+}
+function bindFab() {
+  var fab = document.getElementById('fab');
+  if (!fab) return;
+  var timer = null;
+  fab.addEventListener('mouseenter', function () { clearTimeout(timer); fabOpen(); });
+  fab.addEventListener('mouseleave', function () { clearTimeout(timer); timer = setTimeout(fabClose, 160); });
+  fab.addEventListener('focusin', function () { clearTimeout(timer); fabOpen(); });
+  fab.addEventListener('focusout', function (e) {
+    clearTimeout(timer);
+    if (!fab.contains(e.relatedTarget)) timer = setTimeout(fabClose, 200);
+  });
+  var main = document.getElementById('fabMain');
+  if (main) main.addEventListener('click', function (e) { e.stopPropagation();
+    fab.classList.contains('open') ? fabClose() : fabOpen(); });
+  var scheme = document.getElementById('fabScheme');
+  if (scheme) scheme.addEventListener('click', function (e) { e.stopPropagation(); toggleScheme(); });
+  var theme = document.getElementById('fabTheme');
+  if (theme) theme.addEventListener('click', function (e) { e.stopPropagation(); toggleThemePop(); });
+  renderSwatches();
+}
+document.addEventListener('keydown', function (e) {
+  if (e.key === 'Escape') {
+    if (document.getElementById('fab').classList.contains('open')) fabClose();
+  }
+});
+document.addEventListener('click', function (e) {
+  var fab = document.getElementById('fab');
+  if (fab.classList.contains('open') && !fab.contains(e.target)) fabClose();
+});
+
+/* ============================================================ 登录表单 ========
+   提交协议与原版一致：原生 POST 到 API_BASE+'login'（form-urlencoded），
+   成功 302 带 cookie 跳 /ui；失败 302 回 /login?error=1。 */
+var API_BASE = location.pathname.replace(/\/login\/?$/, '/');
+var form = document.getElementById('loginForm');
+form.action = API_BASE + 'login';
+var errBox = document.getElementById('err');
+var errText = document.getElementById('err-text');
+if (new URLSearchParams(location.search).get('error') === '1') {
+  errText.textContent = '用户名或密码错误';
+  errBox.classList.add('show');
+  errBox.removeAttribute('hidden');
+}
+['username', 'password'].forEach(function (id) {
+  document.getElementById(id).addEventListener('input', function () {
+    if (errBox.classList.contains('show')) {
+      errBox.classList.remove('show');
+      document.getElementById(id).classList.remove('has-err');
+    }
+  });
+});
+var submitting = false;
+form.addEventListener('submit', function () {
+  /* 提交中：仅禁用登录钮 + 防重复提交。
+     ⚠️ 不能 disabled 输入框：disabled 字段不会随表单提交，会导致服务端收到空用户名/密码。 */
+  if (submitting) { event.preventDefault(); return; }
+  submitting = true;
+  var btn = document.getElementById('btn');
+  btn.disabled = true;
+  btn.classList.add('loading');
+});
+document.getElementById('themeBtn').addEventListener('click', toggleScheme);
+bindFab();
+</script>
+</body>
+</html>
