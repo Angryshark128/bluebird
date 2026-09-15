@@ -24,14 +24,34 @@ Webhook → 多渠道通知网关：把 **GitHub 仓库事件**（star / fork / 
 
 ## 架构
 
-```
-GitHub App / 通用 HTTP 调用
-   │ webhook: star / fork / issues / issue_comment / pull_request / workflow_run
-   ▼
-/hooks/<来源 ID>  →  反代（Nginx 等）  →  Bluebird（8082）
-                                         │ 签名/token 校验 → 来源级过滤 → 去重
-                                         ▼
-                         分发渠道（Bark / 飞书 / 企业微信 / PushDeer / 通用 Webhook，多实例并行）→ 手机 / 群 / 自建服务
+```mermaid
+flowchart TD
+    GH["GitHub App"]:::src
+    HTTP["通用 HTTP"]:::src
+
+    GH -->|"star / fork / issues<br/>issue_comment / PR / workflow_run"| HOOK
+    HTTP -->|"POST + Bearer Token"| HOOK
+
+    HOOK["/hooks/&lt;来源 ID&gt;"] --> PROXY["反代 (Nginx 等)"] --> APP["Bluebird :8082"]
+    APP --> VAL["签名 / Token 校验"] --> FILTER["来源级过滤"] --> DEDUP["去重"] --> DISPATCH
+
+    subgraph DISPATCH["分发渠道 (多实例并行)"]
+        direction LR
+        C1["Bark"]:::ch
+        C2["飞书"]:::ch
+        C3["企业微信"]:::ch
+        C4["PushDeer"]:::ch
+        C5["通用 Webhook"]:::ch
+    end
+
+    C1 --> OUT["手机 / 群 / 自建服务"]
+    C2 --> OUT
+    C3 --> OUT
+    C4 --> OUT
+    C5 --> OUT
+
+    classDef src fill:#dbeafe,stroke:#2563eb,color:#1e3a8a
+    classDef ch fill:#dcfce7,stroke:#16a34a,color:#14532d
 ```
 
 ## 快速开始
