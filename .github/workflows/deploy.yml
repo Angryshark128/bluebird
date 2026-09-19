@@ -1,84 +1,90 @@
 name: Deploy
 
-# 打 v* tag 或手动触发时，自动部署（docker compose）
-# 部署版本写入数据目录 version 文件，面板顶栏展示（/api/version）
-# 部署路径由 vars.NOTIFY_DEPLOY_PATH 指定（默认示例值见仓库 Variables 配置）
+# 青鸟 Bluebird 业务仓库 CI/CD（2026-09-19 改造为 app-deploy 统一部署链路）
+#
+#   - 业务仓库只做两件事：跑测试、把镜像推到 ghcr（零 registry secret、零 SSH key）
+#   - 「镜像分发到 ACR + SSH 部署到主机」由私有仓库 hancic128/app-deploy 执行
+#   - 部署后的探活由 app-deploy 侧的 services/bluebird/healthcheck.sh 负责
+#
+# 触发纪律：**只允许打 v* tag**（不允许 push branches / pull_request 自动跑，省 Actions 额度）。
+# 日常回归在本地 `python3 -m unittest discover -s tests`；本仓库不再有 PR 自动测试。
+#
+# 前置 secret（仓库 Settings → Secrets and variables → Actions）：
+#   APP_DEPLOY_DISPATCH_TOKEN —— fine-grained PAT，Contents: Read and write，
+#                                仅授权 hancic128/app-deploy（缺了会 403）
+# 推 ghcr 用自带的 GITHUB_TOKEN，不需要任何额外 secret。
+
 on:
   push:
-    tags:
-      - 'v*'
-  workflow_dispatch:
+    tags: ['v*']
 
-# 敏感信息均来自仓库 Secrets/Variables（不提交任何明文）
-#   Secrets:   NOTIFY_DEPLOY_KEY（部署 SSH 私钥）、NOTIFY_AUTH_PASS（面板密码）
-#   Variables: NOTIFY_DEPLOY_HOST / NOTIFY_DEPLOY_USER / NOTIFY_DEPLOY_PATH / NOTIFY_AUTH_USER
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  # 推镜像到 ghcr 需要 packages: write（缺此项会报
+  # "installation not allowed to Create organization package"）
+  packages: write
+
 jobs:
-  deploy:
+  test:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          # 与 Dockerfile 的 python:3.11-alpine 对齐，测的就是线上运行时
+          python-version: "3.11"
+      - name: 语法检查
+        run: python3 -m py_compile server.py
+      - name: 单元测试
+        run: python3 -m unittest discover -s tests -v
+
+  build-and-push:
+    needs: test
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
 
-      - name: 配置 SSH
-        env:
-          SSH_KEY: ${{ secrets.NOTIFY_DEPLOY_KEY }}
-          HOST: ${{ vars.NOTIFY_DEPLOY_HOST }}
-        run: |
-          mkdir -p ~/.ssh && chmod 700 ~/.ssh
-          echo "$SSH_KEY" | base64 -d > ~/.ssh/deploy_key && chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -H "$HOST" >> ~/.ssh/known_hosts 2>/dev/null
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-      - name: 同步源码
-        env:
-          HOST: ${{ vars.NOTIFY_DEPLOY_HOST }}
-          USER: ${{ vars.NOTIFY_DEPLOY_USER }}
-          DEPLOY_PATH: ${{ vars.NOTIFY_DEPLOY_PATH }}
-        run: |
-          rsync -az --exclude '.env' -e 'ssh -i ~/.ssh/deploy_key' \
-            server.py ui.html login.html favicon.ico Dockerfile docker-compose.yml docs \
-            "$USER@$HOST:$DEPLOY_PATH/"
+      - name: 登录 ghcr
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: 写入部署版本
-        if: github.ref_type == 'tag'
-        env:
-          HOST: ${{ vars.NOTIFY_DEPLOY_HOST }}
-          USER: ${{ vars.NOTIFY_DEPLOY_USER }}
-          VERSION: ${{ github.ref_name }}
-        run: |
-          ssh -i ~/.ssh/deploy_key "$USER@$HOST" \
-            "echo '$VERSION' > /opt/bluebird/version && chmod 644 /opt/bluebird/version"
+      - name: 构建并推送镜像
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          # 镜像名/仓库名必须与 app-deploy 的镜像搬运规则一致：
+          #   ghcr.io/hancic128/bluebird:<TAG>  ->  ACR/hancic128/bluebird:<TAG>
+          # <TAG> 就是 git tag 名；app-deploy 直接按这个地址拉取，改名会导致部署失败。
+          tags: |
+            ghcr.io/hancic128/bluebird:${{ github.ref_name }}
+          platforms: linux/amd64
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
-      - name: 注入面板认证
-        env:
-          HOST: ${{ vars.NOTIFY_DEPLOY_HOST }}
-          USER: ${{ vars.NOTIFY_DEPLOY_USER }}
-          DEPLOY_PATH: ${{ vars.NOTIFY_DEPLOY_PATH }}
-          NOTIFY_USER: ${{ vars.NOTIFY_AUTH_USER }}
-          NOTIFY_PASS: ${{ secrets.NOTIFY_AUTH_PASS }}
-        run: |
-          printf 'NOTIFY_AUTH_USER=%s\nNOTIFY_AUTH_PASS=%s\n' "$NOTIFY_USER" "$NOTIFY_PASS" > .env.deploy
-          scp -i ~/.ssh/deploy_key .env.deploy "$USER@$HOST:~/bb-auth.env"
-          rm -f .env.deploy
-          ssh -i ~/.ssh/deploy_key "$USER@$HOST" "
-            grep -v '^NOTIFY_AUTH_' $DEPLOY_PATH/.env > $DEPLOY_PATH/.env.tmp || true
-            cat ~/bb-auth.env >> $DEPLOY_PATH/.env.tmp
-            mv $DEPLOY_PATH/.env.tmp $DEPLOY_PATH/.env && chmod 600 $DEPLOY_PATH/.env
-            rm -f ~/bb-auth.env
-          "
-
-      - name: 重启容器
-        env:
-          HOST: ${{ vars.NOTIFY_DEPLOY_HOST }}
-          USER: ${{ vars.NOTIFY_DEPLOY_USER }}
-          DEPLOY_PATH: ${{ vars.NOTIFY_DEPLOY_PATH }}
-        run: |
-          ssh -i ~/.ssh/deploy_key "$USER@$HOST" \
-            "cd $DEPLOY_PATH && docker compose up -d --build"
-
-      - name: 验证
-        env:
-          HOST: ${{ vars.NOTIFY_DEPLOY_HOST }}
-          USER: ${{ vars.NOTIFY_DEPLOY_USER }}
-        run: |
-          # 8082 未对公网开放（nginx 反代），改为服务器本地验证（根路径部署）
-          ssh -i ~/.ssh/deploy_key "$USER@$HOST" \
-            "for i in 1 2 3 4 5; do curl -sf -o /dev/null http://127.0.0.1:8082/health && echo '服务 OK' && exit 0; sleep 3; done; echo '服务未就绪' && exit 1"
+  # 保留改造前的「打 tag 生成 Release notes」行为；不需要可直接删掉本 job
+  dispatch:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: 触发 app-deploy（镜像搬运 + 部署 + 健康检查）
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.APP_DEPLOY_DISPATCH_TOKEN }}
+          repository: hancic128/app-deploy
+          event-type: deploy
+          # app 必须等于 app-deploy 里 services/<app> 的目录名；tag 就是本次 git tag
+          client-payload: '{"app":"bluebird","tag":"${{ github.ref_name }}"}'
